@@ -70,6 +70,7 @@ def main() -> None:
     parser.add_argument("--target_weight", type=float, default=1.0)
     parser.add_argument("--teacher_weight", type=float, default=0.5)
     parser.add_argument("--teacher_l1_weight", type=float, default=0.0)
+    parser.add_argument("--init_student_checkpoint", default="")
     parser.add_argument("--n_filters", type=int, default=128)
     parser.add_argument("--kernel_size", type=int, default=16)
     parser.add_argument("--stride", type=int, default=8)
@@ -100,13 +101,17 @@ def main() -> None:
         param.requires_grad_(False)
 
     student = build_model(args).to(device)
+    if args.init_student_checkpoint:
+        student_ckpt = torch.load(args.init_student_checkpoint, map_location=device)
+        student.load_state_dict(student_ckpt["model"])
+        print(f"initialized student={args.init_student_checkpoint}", flush=True)
     optimizer = torch.optim.Adam(student.parameters(), lr=args.lr)
     train_ds = TSEDataset(args.train_manifest, args.sample_rate, args.segment_seconds, normalize_audio=True)
     valid_ds = TSEDataset(args.valid_manifest, args.sample_rate, args.segment_seconds, normalize_audio=True)
     train_loader = DataLoader(train_ds, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers, drop_last=True, collate_fn=tse_collate)
     valid_loader = DataLoader(valid_ds, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers, collate_fn=tse_collate)
 
-    best_valid = float("inf")
+    best_valid_sisdr = float("-inf")
     with (exp_dir / "train_log.csv").open("w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=["epoch", "train_loss", "valid_loss", "valid_si_sdr"])
         writer.writeheader()
@@ -117,8 +122,8 @@ def main() -> None:
             f.flush()
             print(f"epoch={epoch} train={train_loss:.4f} train_si_sdr={train_sisdr:.3f} valid={valid_loss:.4f} valid_si_sdr={valid_sisdr:.3f}", flush=True)
             torch.save({"model": student.state_dict(), "args": vars(args), "epoch": epoch}, exp_dir / "last.pt")
-            if valid_loss < best_valid:
-                best_valid = valid_loss
+            if valid_sisdr > best_valid_sisdr:
+                best_valid_sisdr = valid_sisdr
                 torch.save({"model": student.state_dict(), "args": vars(args), "epoch": epoch}, exp_dir / "best.pt")
 
     ckpt = torch.load(exp_dir / "best.pt", map_location=device)
