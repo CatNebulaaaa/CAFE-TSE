@@ -194,6 +194,39 @@ Success criterion:
 - Student gets close to teacher quality while reducing parameter count or runtime.
 - Distillation baseline must compare against the same student trained without teacher.
 
+Observed result on the first strong-teacher distillation attempt:
+
+| System | Test SI-SDR | Test SDR | Test SIR | Interpretation |
+| --- | ---: | ---: | ---: | --- |
+| Strong teacher, shared clean80 | 12.52 | 12.54 | 27.05 | New best teacher; strong model route works. |
+| Small student, supervised | 8.16 | 8.16 | 17.30 | Same small architecture, trained directly to clean target. |
+| Small student, from-scratch distillation | 8.02 | 8.02 | 16.76 | Did not beat supervised student; treat as a negative result. |
+
+Failure interpretation:
+
+- The student and distilled student used the same architecture, so the drop is not caused by a smaller distilled model.
+- The task has clean waveform targets, so direct supervised SI-SDR to the target is already a strong training signal.
+- Teacher waveform output is not ground truth; it contains residual errors. A high teacher weight can pull the student toward teacher artifacts.
+- The first distillation run started from scratch with `teacher_weight=0.5`, which is too aggressive for this waveform regression setting.
+- The first implementation also selected `best.pt` by mixed distillation loss instead of target validation SI-SDR. This has been fixed.
+
+Improved distillation route:
+
+1. Initialize the student from the supervised student checkpoint.
+2. Use the strong teacher only as a low-weight regularizer.
+3. Lower the learning rate for fine-tuning.
+4. Select best checkpoint by validation SI-SDR against the clean target, not by mixed teacher loss.
+
+Recommended command-level settings:
+
+```bash
+--init_student_checkpoint experiments/open_speakerbeam_shared_clean80_student_small/best.pt
+--teacher_checkpoint experiments/open_speakerbeam_shared_clean80_strong/best.pt
+--teacher_weight 0.1
+--target_weight 1.0
+--lr 0.0003
+```
+
 ### Current Execution Route
 
 The next work should be staged so that each change has a clean baseline and a clear failure mode.
