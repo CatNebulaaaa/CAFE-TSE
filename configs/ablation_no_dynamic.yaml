@@ -1,0 +1,4 @@
+extends: cafe_tse_curriculum.yaml
+model:
+  dynamic_inference: false
+

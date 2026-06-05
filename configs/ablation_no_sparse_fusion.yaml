@@ -1,0 +1,4 @@
+extends: cafe_tse_curriculum.yaml
+model:
+  sparse_fusion_blocks: []
+

@@ -1,0 +1,35 @@
+seed: 42
+sample_rate: 16000
+segment_seconds: 4.0
+batch_size: 6
+num_workers: 4
+max_epochs: 50
+device: cuda
+data:
+  normalize_audio: true
+  curriculum: true
+  curriculum_schedule:
+    - {until_epoch: 10, difficulties: [easy]}
+    - {until_epoch: 25, difficulties: [easy, medium]}
+    - {until_epoch: 40, difficulties: [medium, hard]}
+    - {until_epoch: 50, difficulties: [easy, medium, hard]}
+model:
+  name: cafe_tse
+  n_fft: 512
+  hop_length: 128
+  win_length: 512
+  emb_dim: 32
+  hidden_dim: 128
+  n_blocks: 4
+  n_heads: 2
+  sparse_fusion_blocks: [0, 2]
+  dynamic_inference: false
+  shallow_blocks: 2
+  lite_blocks: 3
+  full_blocks: 4
+  route_threshold_easy: 0.35
+  route_threshold_hard: 0.65
+loss: {si_sdr_weight: 1.0, spectral_weight: 0.2}
+optim: {name: adamw, lr: 0.0003, weight_decay: 0.00001, grad_clip: 5.0}
+eval: {save_audio: 20, compute_sdr_sir_sar: true, compute_pesq_stoi: false}
+

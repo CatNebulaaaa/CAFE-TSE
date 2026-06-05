@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CAFE-TSE 交互式系统展示台</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <div>
+          <strong>CAFE-TSE</strong>
+          <span>鸡尾酒会语音分离展示台</span>
+        </div>
+      </div>
+      <nav class="nav" aria-label="展示台导航">
+        <button class="nav-item active" data-view="overview">系统总览</button>
+        <button class="nav-item" data-view="cases">案例展厅</button>
+        <button class="nav-item" data-view="charts">实验图表</button>
+        <button class="nav-item" data-view="cognition">认知映射</button>
+      </nav>
+      <div class="side-metrics">
+        <span>无泄漏 SI-SDRi</span><strong>0.0710 dB</strong>
+        <span>锚点复核</span><strong>-5.1556 dB</strong>
+        <span>参数量</span><strong>200,962</strong>
+      </div>
+    </aside>
+
+    <section class="main">
+      <section class="view active" id="overview">
+        <header class="hero">
+          <img src="assets/hero-cafe-tse-lab.png" alt="真实声学实验室中的目标说话人提取演示">
+          <div class="hero-copy">
+            <p class="eyebrow">Cocktail-party target speech extraction</p>
+            <h1>参考声音引导的目标说话人提取</h1>
+            <p>CAFE-TSE 把人类听觉注意拆成可计算的三步：用参考语音确定“听谁”，用频谱预增强突出目标线索，再用轻量掩码主干完成目标提取；最终复核同时展示了参考泄漏会怎样制造虚高指标。</p>
+            <div class="hero-stats">
+              <article><span>无泄漏 SI-SDRi</span><strong>0.0710 dB</strong></article>
+              <article><span>复训练样本</span><strong>652/150/100</strong></article>
+              <article><span>泄漏锚点复核</span><strong>-5.1556 dB</strong></article>
+            </div>
+            <div class="hero-tags" aria-label="核心模块">
+              <span>参考语音条件</span>
+              <span>EGSP 频谱预增强</span>
+              <span>5-block 轻量主干</span>
+              <span>泄漏复核</span>
+            </div>
+          </div>
+        </header>
+
+        <article class="panel architecture-stage">
+          <div class="panel-head">
+            <div>
+              <h2>交互式系统架构图</h2>
+              <p>悬停任一模块查看它在鸡尾酒会目标说话人提取中的作用。</p>
+            </div>
+            <span class="hint">悬停查看说明</span>
+          </div>
+          <div class="architecture-wrap">
+            <canvas id="architectureCanvas" width="1500" height="720"></canvas>
+            <button class="hotspot" data-module="mixture" style="left:4.67%;top:29.17%;width:12%;height:15.56%"></button>
+            <button class="hotspot" data-module="stft" style="left:22.33%;top:29.17%;width:10.93%;height:15.56%"></button>
+            <button class="hotspot" data-module="egsp" style="left:39%;top:16.67%;width:12.67%;height:16.11%"></button>
+            <button class="hotspot" data-module="condition" style="left:39%;top:47.22%;width:12.67%;height:16.11%"></button>
+            <button class="hotspot" data-module="separator" style="left:59.67%;top:29.17%;width:14.67%;height:15.56%"></button>
+            <button class="hotspot" data-module="anchor" style="left:80.67%;top:16.67%;width:12.67%;height:16.11%"></button>
+            <button class="hotspot" data-module="target" style="left:80.67%;top:47.22%;width:12.67%;height:16.11%"></button>
+            <div class="module-tooltip" id="moduleTooltip">
+              <strong>模块说明</strong>
+              <p>悬停架构图中的模块查看细节。</p>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section class="view" id="cases">
+        <header class="section-head">
+          <div>
+            <p class="eyebrow">真实案例展厅</p>
+            <h1>三组真实案例：听、看、比。</h1>
+          </div>
+          <label class="case-picker">
+            <span>案例</span>
+            <select id="caseSelect">
+              <option value="case01">案例 01 · 清晰重叠</option>
+              <option value="case02">案例 02 · 同性别混合</option>
+              <option value="case03">案例 03 · 密集干扰</option>
+            </select>
+          </label>
+        </header>
+
+        <div class="case-layout">
+          <article class="panel spectrum-panel">
+            <h2>波形与频谱印象</h2>
+            <canvas id="caseCanvas" width="1100" height="560"></canvas>
+          </article>
+          <article class="audio-stack">
+            <div class="audio-card" data-track="mixture"><span>混合语音</span><button class="play-btn" aria-label="播放混合语音"></button><audio preload="metadata"></audio></div>
+            <div class="audio-card accent" data-track="ours"><span>CAFE-TSE 输出</span><button class="play-btn" aria-label="播放 CAFE-TSE 输出"></button><audio preload="metadata"></audio></div>
+            <div class="audio-card" data-track="baseline"><span>基线模型</span><button class="play-btn" aria-label="播放基线模型"></button><audio preload="metadata"></audio></div>
+            <div class="audio-card" data-track="target"><span>目标真值</span><button class="play-btn" aria-label="播放目标真值"></button><audio preload="metadata"></audio></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="view" id="charts">
+        <header class="section-head">
+          <div>
+            <p class="eyebrow">实验图表墙</p>
+            <h1>用量化图表说明：绝对增益与效率变化。</h1>
+          </div>
+        </header>
+        <div class="chart-grid">
+          <article class="panel"><h2>主指标对比</h2><canvas id="barChart" width="760" height="420"></canvas></article>
+          <article class="panel"><h2>综合能力雷达图</h2><canvas id="radarChart" width="760" height="420"></canvas></article>
+          <article class="panel"><h2>参考锚点权重扫描</h2><canvas id="lineChart" width="760" height="420"></canvas></article>
+          <article class="panel"><h2>轻量化效率</h2><canvas id="effChart" width="760" height="420"></canvas></article>
+          <article class="panel"><h2>训练收敛曲线</h2><canvas id="trainChart" width="760" height="420"></canvas></article>
+          <article class="panel"><h2>难度分组表现</h2><canvas id="difficultyChart" width="760" height="420"></canvas></article>
+          <article class="panel"><h2>参考语音鲁棒性</h2><canvas id="robustChart" width="760" height="420"></canvas></article>
+          <article class="panel"><h2>模块贡献瀑布图</h2><canvas id="waterfallChart" width="760" height="420"></canvas></article>
+          <article class="panel wide"><h2>三说话人压力测试</h2><canvas id="stressChart" width="1300" height="420"></canvas></article>
+        </div>
+      </section>
+
+      <section class="view" id="cognition">
+        <header class="section-head">
+          <div>
+            <p class="eyebrow">认知机制映射</p>
+            <h1>从人类听觉注意到计算模块。</h1>
+          </div>
+        </header>
+        <div class="cog-grid">
+          <article class="cog-card"><span>注意目标设定</span><strong>参考语音</strong><p>人在嘈杂环境中不是平均聆听所有声音，而是先形成“我要听这个人”的内部目标。参考语音在系统中承担同样角色：它给出目标说话人的音色、发声习惯和长期频谱轮廓，使任务从盲源分离变成目标导向提取。</p></article>
+          <article class="cog-card"><span>听觉对象形成</span><strong>说话人条件</strong><p>人脑会把基频、共振峰、音色、起止时间和短时连续性绑定成一个稳定的听觉对象。模型把参考语音编码成说话人条件，并注入时频主干，让混合语音里与目标身份一致的结构获得更高权重。</p></article>
+          <article class="cog-card"><span>自上而下调制</span><strong>EGSP 预增强</strong><p>注意不是只在听到之后再选择，也会提前改变对声学线索的敏感度。EGSP 使用目标频谱画像对混合频带做预增强，相当于让模型先把“可能属于目标”的频带抬高，再交给分离网络判断。</p></article>
+          <article class="cog-card"><span>掩蔽抑制</span><strong>幅度掩码</strong><p>鸡尾酒会听觉依赖对干扰声源的持续抑制。幅度掩码头在每个时频单元估计保留比例，压低非目标人声和噪声成分，把“听觉过滤”落到可解释的时频选择上。</p></article>
+          <article class="cog-card"><span>注意资源预算</span><strong>轻量主干</strong><p>人的注意资源有限，系统的计算预算也有限。5-block 主干用更少参数和 MACs 保持核心分离能力，适合把目标说话人提取放到实时或边缘场景中展示。</p></article>
+          <article class="cog-card"><span>实验复核</span><strong>参考泄漏审计</strong><p>人在复杂听觉环境中需要不断确认“听到的是不是目标”。系统实验也需要同样的复核：无泄漏 disjoint enrollment 显示，直接把参考语音当输出锚点会破坏指标，因此锚点只保留为失败案例。</p></article>
+        </div>
+        <article class="panel">
+          <h2>听觉注意计算流程</h2>
+          <canvas id="cognitionCanvas" width="1300" height="520"></canvas>
+        </article>
+      </section>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>

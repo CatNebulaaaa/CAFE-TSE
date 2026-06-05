@@ -1,0 +1,9 @@
+utt_id,mixture_path,target_path,enrollment_path,speaker_id,split,sample_rate,duration,num_speakers,sir,snr,overlap_ratio,gender_condition,enrollment_length,enrollment_noise,difficulty,complexity_score
+toy_000,data\toy\mixtures\toy_000.wav,data\toy\targets\toy_000.wav,data\toy\enrollments\toy_000.wav,spk_0,toy,8000,1.0,2,5,20,0.7,mixed,1.0,clean,easy,0.5
+toy_001,data\toy\mixtures\toy_001.wav,data\toy\targets\toy_001.wav,data\toy\enrollments\toy_001.wav,spk_1,toy,8000,1.0,2,0,20,0.7,mixed,1.0,clean,medium,0.5
+toy_002,data\toy\mixtures\toy_002.wav,data\toy\targets\toy_002.wav,data\toy\enrollments\toy_002.wav,spk_2,toy,8000,1.0,2,-5,20,0.7,mixed,1.0,clean,hard,0.5
+toy_003,data\toy\mixtures\toy_003.wav,data\toy\targets\toy_003.wav,data\toy\enrollments\toy_003.wav,spk_3,toy,8000,1.0,2,5,20,0.7,mixed,1.0,clean,easy,0.5
+toy_004,data\toy\mixtures\toy_004.wav,data\toy\targets\toy_004.wav,data\toy\enrollments\toy_004.wav,spk_0,toy,8000,1.0,2,0,20,0.7,mixed,1.0,clean,medium,0.5
+toy_005,data\toy\mixtures\toy_005.wav,data\toy\targets\toy_005.wav,data\toy\enrollments\toy_005.wav,spk_1,toy,8000,1.0,2,-5,20,0.7,mixed,1.0,clean,hard,0.5
+toy_006,data\toy\mixtures\toy_006.wav,data\toy\targets\toy_006.wav,data\toy\enrollments\toy_006.wav,spk_2,toy,8000,1.0,2,5,20,0.7,mixed,1.0,clean,easy,0.5
+toy_007,data\toy\mixtures\toy_007.wav,data\toy\targets\toy_007.wav,data\toy\enrollments\toy_007.wav,spk_3,toy,8000,1.0,2,0,20,0.7,mixed,1.0,clean,medium,0.5

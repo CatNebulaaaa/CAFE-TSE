@@ -1,0 +1,5 @@
+extends: cafe_tse_dynamic.yaml
+data:
+  normalize_audio: true
+  curriculum: false
+
