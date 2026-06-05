@@ -41,7 +41,7 @@
 
 \vspace{1em}
 
-\noindent\textbf{说明：}本文档先完成课程报告中的任务一与任务三。任务二“鸡尾酒会问题模拟”将与后续 CAFE-TSE 系统实验结果、架构图和音频样例合并成完整报告。
+\noindent\textbf{说明：}本文档为《认知与计算》课程报告的整合草稿，已包含任务一、任务二和任务三。任务二的最终实验表将在远端 strong teacher、学生模型和蒸馏模型训练结束后统一替换，目前先保留已验证的 SpeakerBeam 10 dB+ 结果和待更新占位。
 
 \section{人工智能与人类智能的多维度对比分析}
 
@@ -236,6 +236,158 @@ AI 仍难以匹敌人类的方面包括：
 人工智能与人类智能不是同一种智能在同一条尺度上的简单高低关系，而是两类具有不同结构和优势的智能系统。AI 在可数据化、可形式化、可评价的任务中快速进步，并在许多专业领域成为强大工具；人类则在具身经验、社会情境、价值判断和开放世界适应方面具有深层优势。
 
 从综述角度看，本文可以得出三个结论。第一，AI 的“超越”应限定在具体任务和评价指标中，不能从单项成绩直接推出整体智能优越。第二，人类智能的核心不只是信息处理，还包括身体、情感、社会关系和意义建构。第三，未来更合理的方向不是简单追求 AI 替代人类，而是构建人机协同系统：让 AI 承担大规模计算、检索、生成和优化任务，让人类负责目标设定、价值判断、责任承担和复杂情境理解。
+
+\newpage
+
+\section{鸡尾酒会问题模拟：基于听觉计算的目标说话人语音分离系统}
+
+\subsection{问题背景：从鸡尾酒会效应到计算建模}
+
+鸡尾酒会问题指人在多人同时说话、背景噪声复杂的环境中，仍然能够根据注意目标跟踪某一特定说话者声音的能力。Cherry 的双耳语音识别实验最早系统揭示了这一现象\cite{cherry1953}。从认知科学角度看，鸡尾酒会能力并不是简单的声学滤波，而是选择性注意、听觉场景分析、声源绑定和认知资源分配共同作用的结果\cite{broadbent1958,bregman1990}。
+
+课程任务要求设计并实现一个模拟鸡尾酒会情景下的多说话者语音分离系统，使模型能够在多人交谈环境中跟踪并集中听取某个特定说话者。本文采用目标说话人提取（target speaker extraction, TSE）作为任务形式：系统不仅要从混合语音中分离声音，还要根据目标说话人的参考语音判断“应该听谁”。这种设定比普通盲源分离更接近人类选择性听觉，因为它显式引入了注意目标。
+
+\subsection{任务定义与认知机制映射}
+
+给定混合语音 $x(t)$、目标说话人的参考语音或 enrollment $e(t)$，系统需要输出目标说话人的估计语音 $\hat{s}(t)$：
+\[
+    \hat{s}=f_{\theta}(x,e).
+\]
+其中，$x(t)$ 通常包含目标说话人与一个或多个干扰说话人，$e(t)$ 提供目标身份线索。训练时以干净目标语音 $s(t)$ 为监督信号，通过 SI-SDR、SDR、SIR、SAR 等指标评价分离质量。
+
+表\ref{tab:tse_cognitive_mapping}给出本文系统与人类听觉注意机制之间的对应关系。该表也是任务二的理论主线：模型设计不是任意堆叠网络结构，而是把听觉注意中的关键机制转化为可训练、可评估的计算模块。
+
+\begin{longtable}{p{3.0cm}p{4.5cm}p{5.5cm}}
+\caption{鸡尾酒会认知机制与目标说话人提取模块的对应关系}
+\label{tab:tse_cognitive_mapping}\\
+\toprule
+认知机制 & 人类听觉中的含义 & 计算系统中的实现 \\
+\midrule
+\endfirsthead
+\toprule
+认知机制 & 人类听觉中的含义 & 计算系统中的实现 \\
+\midrule
+\endhead
+选择性注意 & 在多人声音中优先关注目标说话人 & 使用 enrollment/reference speech 指定目标身份 \\
+听觉对象形成 & 将时频线索组织成连续声源 & 使用语音分离主干建模目标与干扰的结构差异 \\
+特征绑定 & 将音色、音高、语义等线索绑定到同一说话人 & 使用 speaker-conditioned extraction，把参考语音条件注入分离网络 \\
+资源分配 & 在复杂场景中投入更多认知处理资源 & 使用强教师、大模型训练、学生蒸馏和复杂度感知推理平衡质量与效率 \\
+错误修正 & 根据听觉反馈调整注意目标和解释 & 使用 SI-SDR 损失、sanity check 和错误 enrollment 测试修正模型设计 \\
+\bottomrule
+\end{longtable}
+
+\subsection{系统发展路线：从自写原型到有效开源主干}
+
+本项目最初实现了一个自写的 CAFE-TSE 原型，包含 STFT 编码、Enrollment-Guided Spectral Preprocessing（EGSP）、speaker conditioning、稀疏条件融合、TFGridNetLite 分离主干、知识蒸馏和复杂度感知推理等模块。这一原型的优点是完整体现了认知机制到计算模块的映射，结构上也覆盖了课程评分标准中的模型设计、特征绑定、选择性注意和效率优化。
+
+但后续严格复核发现，自写 TFGridNetLite/CAFE-TSE 主干在无泄漏 disjoint enrollment 条件下分离质量很低，教师模型测试 SI-SDR 约为 1 dB，说明它并不是可靠的高保真目标说话人提取模型。进一步的 wrong enrollment、interferer enrollment 和 target-as-enrollment 检查表明，问题主要出在目标说话人条件建模和分离主干实现，而不是数据、SI-SDR 损失或评估程序本身。
+
+因此，本文将最终有效系统切换到开源 TD-SpeakerBeam 作为可靠分离主干。SpeakerBeam 是目标说话人提取领域的经典思路之一，它通过参考语音条件引导模型提取指定说话人\cite{zmolikova2019speakerbeam}。切换开源实现后，balanced10 数据上测试 SI-SDR 达到约 7.00 dB；在 clean shared 80-speaker 数据上，当前已验证模型达到约 10.32 dB test SI-SDR 和 10.34 dB SDR。这说明：数据构造、评价指标和训练流程是可用的，早期瓶颈主要来自自写模型细节。
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[
+  node distance=0.8cm,
+  box/.style={draw, rounded corners, align=center, minimum width=4.4cm, minimum height=0.85cm, font=\small},
+  note/.style={draw, rounded corners, align=center, minimum width=4.2cm, minimum height=0.85cm, font=\small, fill=gray!8},
+  arrow/.style={-{Stealth[length=2.2mm]}, thick}
+]
+\node[box] (proto) {自写 CAFE-TSE 原型\\EGSP + TFGridNetLite + 蒸馏};
+\node[note, below=of proto] (audit) {严格数据审计\\disjoint enrollment 与 wrong-enrollment sanity check};
+\node[box, below=of audit] (fail) {发现问题\\自写主干约 1 dB，条件提取不可靠};
+\node[box, below=of fail] (open) {切换开源 TD-SpeakerBeam\\验证数据和损失流程正确};
+\node[box, below=of open] (future) {当前路线\\强教师训练 + 小学生模型 + 蒸馏 + EGSP/鲁棒性扩展};
+\draw[arrow] (proto) -- (audit);
+\draw[arrow] (audit) -- (fail);
+\draw[arrow] (fail) -- (open);
+\draw[arrow] (open) -- (future);
+\end{tikzpicture}
+\caption{任务二系统开发与排错路线}
+\label{fig:tse_debug_route}
+\end{figure}
+
+\subsection{数据集与实验设置}
+
+当前实验使用 LibriSpeech/LibriMix 风格的两人混合语音构造目标说话人提取数据。每条样本包含 mixture、target、interferer 和 enrollment 四类音频路径。为了避免参考语音泄漏，最终 manifest 中显式记录 target source、enrollment source 和 interferer source，并要求 target 与 enrollment 路径不同、说话人一致。clean shared80 数据集包含 80 位共享说话人、8000 条训练样本、800 条验证样本和 800 条测试样本，用于验证高质量目标说话人提取上限。
+
+表\ref{tab:tse_dataset_summary}总结目前最关键的数据设置。balanced10 用于快速排错，balanced40 用于更大说话人数下的质量验证，shared clean80 用于冲击 10 dB 以上 SDR/SI-SDR。
+
+\begin{table}[htbp]
+\centering
+\begin{tabular}{lrrrrl}
+\toprule
+数据集 & 说话人数 & Train & Valid & Test & 用途 \\
+\midrule
+balanced10 & 10 & 800 & 150 & 150 & 快速验证模型是否真正利用 enrollment \\
+balanced40 & 40 & 2400 & 400 & 400 & 检查更大说话人集合下的泛化 \\
+shared clean80 & 80 & 8000 & 800 & 800 & 当前 10 dB+ 主结果与强教师训练 \\
+\bottomrule
+\end{tabular}
+\caption{任务二核心数据设置}
+\label{tab:tse_dataset_summary}
+\end{table}
+
+评价指标包括 SI-SDR、SI-SDRi、SDR、SIR、SAR、PESQ/STOI（作为辅助指标）以及错误 enrollment 下的性能退化。错误 enrollment 检查尤其重要：如果 wrong enrollment 或 interferer enrollment 也能得到高分，说明模型可能只是做通用增强，而不是目标说话人提取。
+
+\subsection{当前主结果与待更新实验}
+
+表\ref{tab:tse_current_results}给出当前已经确认的核心结果。需要注意的是，strong teacher 仍在训练，学生监督模型和蒸馏模型将在 strong teacher 完成后自动启动。因此，本表目前作为草稿版结果表，后续只需要替换 strong teacher、student 和 distillation 三行。
+
+\small
+\begin{longtable}{@{}p{3.3cm}p{1.45cm}p{1.45cm}p{1.25cm}p{1.25cm}p{3.1cm}@{}}
+\caption{任务二当前结果草稿，待最终训练完成后更新}
+\label{tab:tse_current_results}\\
+\toprule
+系统 & Valid SI-SDR & Test SI-SDR & Test SDR & Test SIR & 解释 \\
+\midrule
+\endfirsthead
+\toprule
+系统 & Valid SI-SDR & Test SI-SDR & Test SDR & Test SIR & 解释 \\
+\midrule
+\endhead
+自写 CAFE-TSE teacher & 1.59 & 1.06 & 1.06 & 4.56 & 失败原型，说明自写主干不可靠 \\
+Open SpeakerBeam balanced10 & 7.49 & 7.00 & 6.99 & 15.89 & 证明数据、损失和评估流程可用 \\
+Open SpeakerBeam balanced40 & 5.52 & 5.45 & 5.44 & 11.07 & 更大说话人数下仍有效，但质量下降 \\
+Open SpeakerBeam shared clean80 & 10.38 & 10.32 & 10.34 & 22.23 & 当前已验证 10 dB+ 主结果 \\
+Strong teacher shared clean80 & 待更新 & 待更新 & 待更新 & 待更新 & 正在训练，用于冲击更高 SDR \\
+Small student supervised & 待更新 & 待更新 & 待更新 & 待更新 & 小模型监督基线 \\
+Small student distilled & 待更新 & 待更新 & 待更新 & 待更新 & 蒸馏后质量/效率平衡模型 \\
+\bottomrule
+\end{longtable}
+\normalsize
+
+目前可写入报告的阶段性结论是：第一，10 dB+ 的 SDR/SI-SDR 目标已经可以达到，说明课程任务中的鸡尾酒会目标说话人提取系统具备可信主结果；第二，强教师路线有必要继续，因为更大的 SpeakerBeam 在训练过程中验证 SI-SDR 已经超过旧的 10 dB+ mid teacher；第三，后续最终报告应把“强教师—学生蒸馏—enrollment 鲁棒性—频域预处理”写成逐步增强路线，而不是一次性堆叠所有模块。
+
+\subsection{Enrollment sanity check 与目标特异性}
+
+为了验证模型是否真正根据目标说话人参考语音工作，本文进行 correct、wrong、interferer、target-as-enrollment 和 zero enrollment 对照。balanced10 上的结果显示，correct enrollment 约为 7.36 dB SI-SDR，wrong enrollment 降至约 -5.73 dB，interferer enrollment 降至约 -15.29 dB，target-as-enrollment 与 correct 接近，zero enrollment 也显著变差。该现象说明有效模型不是简单对 mixture 做通用去噪，而是确实利用 enrollment 选择目标说话人。
+
+\begin{table}[htbp]
+\centering
+\begin{tabular}{lrp{7.2cm}}
+\toprule
+Enrollment 条件 & SI-SDR & 解释 \\
+\midrule
+Correct enrollment & 7.36 & 正确参考语音能提供目标身份线索 \\
+Wrong enrollment & -5.73 & 错误说话人会显著误导提取目标 \\
+Interferer enrollment & -15.29 & 以干扰者为参考时输出严重偏离目标 \\
+Target-as-enrollment & 7.47 & 理想参考语音与正确 enrollment 接近 \\
+Zero enrollment & -3.71 & 没有目标线索时模型不能稳定提取目标 \\
+\bottomrule
+\end{tabular}
+\caption{Open SpeakerBeam balanced10 的 enrollment sanity check}
+\label{tab:enrollment_sanity}
+\end{table}
+
+\subsection{失败案例与改进方向}
+
+任务二最重要的经验不是“哪个模型分数最高”，而是语音分离实验必须同时重视模型、数据和评估。早期自写模型失败说明，目标说话人提取对 conditioning 细节非常敏感；早期 enrollment 构造问题说明，参考语音泄漏会制造虚高指标；balanced10 继续训练过拟合说明，小数据集上的训练分数不能代表测试泛化。
+
+后续改进将按以下顺序进行。第一，完成 strong teacher 训练，用更大模型冲击更高 SDR/SI-SDR。第二，在同一数据上训练 small student supervised baseline。第三，使用更强 teacher 蒸馏 small student，比较质量与效率。第四，在有效 SpeakerBeam 主干上逐步恢复 EGSP 频域预处理、短参考语音、噪声参考语音、wrong enrollment 和复杂度感知路由。这样可以保证每个改进都有清晰对照，不会再次把失败模块混入主结果。
+
+\subsection{任务二小结}
+
+本文将鸡尾酒会问题建模为带参考语音的目标说话人提取任务，把选择性注意、特征绑定和资源分配分别对应到 enrollment、speaker-conditioned separation 和教师-学生/复杂度推理机制。实验排错表明，原自写 CAFE-TSE 原型虽然体现了完整系统构想，但在严格 disjoint enrollment 下不能作为最终高质量模型；开源 TD-SpeakerBeam 则证明数据和评估流程有效，并在 clean shared80 数据上达到 10 dB+ test SI-SDR/SDR。最终报告将在 strong teacher 和蒸馏模型完成后更新表\ref{tab:tse_current_results}，并把最终模型定位为“可靠开源 TSE 主干 + 认知启发式系统增强”的鸡尾酒会模拟系统。
 
 \newpage
 
@@ -460,6 +612,10 @@ Hebbian/局部学习 & 突触可塑性、关联学习 & 共同出现的经验会
 \bibitem{reuters2025imo} Reuters. Google and OpenAI's AI models win milestone gold at global math competition. 2025.
 \bibitem{nori2023gpt4medical} Nori, H., King, N., McKinney, S. M., Carignan, D., Horvitz, E. Capabilities of GPT-4 on Medical Challenge Problems. arXiv:2303.13375, 2023.
 \bibitem{ying2025benchmarking} Ying, L., Collins, K. M., Wong, L., et al. On Benchmarking Human-Like Intelligence in Machines. arXiv:2502.20502, 2025.
+\bibitem{cherry1953} Cherry, E. C. Some experiments on the recognition of speech, with one and with two ears. \textit{The Journal of the Acoustical Society of America}, 25, 975--979, 1953.
+\bibitem{broadbent1958} Broadbent, D. E. \textit{Perception and Communication}. Pergamon Press, 1958.
+\bibitem{bregman1990} Bregman, A. S. \textit{Auditory Scene Analysis: The Perceptual Organization of Sound}. MIT Press, 1990.
+\bibitem{zmolikova2019speakerbeam} Zmolikova, K., Delcroix, M., Kinoshita, K., Ochiai, T., Nakatani, T. SpeakerBeam: Speaker aware neural network for target speaker extraction in speech mixtures. \textit{IEEE Journal of Selected Topics in Signal Processing}, 2019.
 \bibitem{rumelhart1986backprop} Rumelhart, D. E., Hinton, G. E., Williams, R. J. Learning representations by back-propagating errors. Nature, 323, 533--536, 1986.
 \bibitem{thorndike1911animal} Thorndike, E. L. \textit{Animal Intelligence: Experimental Studies}. Macmillan, 1911.
 \bibitem{hebb1949organization} Hebb, D. O. \textit{The Organization of Behavior: A Neuropsychological Theory}. Wiley, 1949.
