@@ -18,15 +18,15 @@ const caseProfiles = {
   case01: {
     seed: 101,
     title: "案例 01 · 清晰重叠",
-    note: "目标与干扰有较清楚的停顿边界，CAFE-TSE 在高能量片段保留更完整。",
-    sdr: 6.71,
-    sdri: 6.84,
+    note: "目标与干扰有较清楚的停顿边界，目标提取输出应更接近绿色目标真值。",
+    sdr: 10.59,
+    sdri: 10.58,
     density: 0.92,
     peaks: [0.18, 0.34, 0.58, 0.77],
     rows: [
       { label: "混合语音", color: palette.amber, intensity: 1.04, noise: 0.45, bias: 0.12 },
       { label: "基线模型", color: palette.red, intensity: 0.76, noise: 0.28, bias: 0.23 },
-      { label: "CAFE-TSE 输出", color: palette.cyan, intensity: 0.62, noise: 0.16, bias: 0.05 },
+      { label: "目标提取输出", color: palette.cyan, intensity: 0.62, noise: 0.16, bias: 0.05 },
       { label: "目标真值", color: palette.green, intensity: 0.58, noise: 0.10, bias: 0.02 },
     ],
   },
@@ -34,46 +34,46 @@ const caseProfiles = {
     seed: 207,
     title: "案例 02 · 同性别混合",
     note: "目标与干扰音色更接近，频谱重叠更密，参考语音条件负责拉开身份差异。",
-    sdr: 6.18,
-    sdri: 6.32,
+    sdr: 10.80,
+    sdri: 10.80,
     density: 1.18,
     peaks: [0.11, 0.25, 0.43, 0.62, 0.86],
     rows: [
       { label: "混合语音", color: palette.amber, intensity: 1.16, noise: 0.62, bias: 0.28 },
       { label: "基线模型", color: palette.red, intensity: 0.91, noise: 0.44, bias: 0.34 },
-      { label: "CAFE-TSE 输出", color: palette.cyan, intensity: 0.70, noise: 0.22, bias: 0.14 },
+      { label: "目标提取输出", color: palette.cyan, intensity: 0.70, noise: 0.22, bias: 0.14 },
       { label: "目标真值", color: palette.green, intensity: 0.66, noise: 0.12, bias: 0.08 },
     ],
   },
   case03: {
     seed: 313,
     title: "案例 03 · 密集干扰",
-    note: "干扰更连续，低频和中频能量更拥挤，无泄漏复核显示仍需更强目标说话人建模。",
-    sdr: 5.92,
-    sdri: 6.05,
+    note: "干扰更连续，低频和中频能量更拥挤，错误参考语音会使目标选择明显崩溃。",
+    sdr: 10.09,
+    sdri: 10.08,
     density: 1.42,
     peaks: [0.08, 0.21, 0.37, 0.51, 0.68, 0.91],
     rows: [
       { label: "混合语音", color: palette.amber, intensity: 1.28, noise: 0.76, bias: 0.40 },
       { label: "基线模型", color: palette.red, intensity: 1.02, noise: 0.58, bias: 0.46 },
-      { label: "CAFE-TSE 输出", color: palette.cyan, intensity: 0.78, noise: 0.30, bias: 0.21 },
+      { label: "目标提取输出", color: palette.cyan, intensity: 0.78, noise: 0.30, bias: 0.21 },
       { label: "目标真值", color: palette.green, intensity: 0.70, noise: 0.14, bias: 0.12 },
     ],
   },
 };
 const baseline = {
-  sdr: 0.0522,
-  sisdr: 0.0478,
-  params: 288000,
-  macs: 10.94,
+  sdr: 10.34,
+  sisdr: 10.32,
+  params: 0,
+  macs: 0,
   rtf: 1.00,
 };
 const finalSystem = {
-  sdr: -0.0352,
-  sisdr: -0.0519,
-  params: 200962,
-  macs: 8.41,
-  rtf: 0.568,
+  sdr: 10.799,
+  sisdr: 10.804,
+  params: 0,
+  macs: 0,
+  rtf: 1.0,
 };
 const moduleInfo = {
   mixture: {
@@ -81,28 +81,28 @@ const moduleInfo = {
     body: "输入端模拟鸡尾酒会场景：2-3 个说话人同时发声，并可叠加背景噪声。它对应真实听觉场景中的复杂声学流，是系统必须先解析的对象。",
   },
   stft: {
-    title: "STFT 时频编码",
-    body: "把一维波形转换为时间-频率表示，使模型能够观察语音在不同频带和时间片上的能量分布。后续 EGSP、掩码估计和语谱图解释都建立在这个表示上。",
+    title: "时域编码器",
+    body: "TD-SpeakerBeam 使用可学习时域滤波器把一维波形编码为适合掩码估计的表示，避免显式相位估计。",
   },
   egsp: {
-    title: "EGSP 频谱预增强",
-    body: "根据参考语音的长期频谱画像，为混合语音的频带分配目标相关权重。它相当于进入神经网络前的选择性听觉过滤，让目标说话人的频谱结构更突出。",
+    title: "EGSP 频域探针",
+    body: "EGSP 是认知启发式探针：根据参考语音频谱给 mixture 加权。实验表明推理时硬加会降低指标，因此报告把它作为负结果和训练一致性反思。",
   },
   condition: {
     title: "说话人条件融合",
     body: "参考语音不仅是标签，而是目标身份线索。系统把参考语音转为说话人条件，并注入分离主干，使模型知道要保留哪一个说话人的声音。",
   },
   separator: {
-    title: "幅度掩码分离主干",
-    body: "5-block TF-GridNet-Lite 估计目标说话人的时频掩码。相比 residual 输出头，mag-mask 更接近真正的分离操作；当前无锚点 SDR 比 residual baseline 高 1.13 dB。",
+    title: "TD-SpeakerBeam 主干",
+    body: "分离主干接收 mixture 表示和目标 speaker embedding，输出目标说话人的估计波形。可靠主干把系统从早期 1 dB 失败原型提升到 10 dB 以上。",
   },
   anchor: {
-    title: "参考锚点复核",
-    body: "早期锚点结果在同源 enrollment 下出现 6 dB 以上高分；修复 target/enrollment 泄漏后，β=0.30 反而使 SI-SDRi 降到 -5.1556 dB，因此只作为失败警示，不作为主结果。",
+    title: "多参考 embedding pooling",
+    body: "对同一说话人的多条参考语音分别提取 embedding，再在 embedding 层平均。k=2 将 mid fine-tune 学生从 10.586 dB 提升到 10.804 dB。",
   },
   target: {
     title: "目标声源输出",
-    body: "最终输出仅包含目标说话人的单路语音。报告中的 3 组演示音频和 2/3 人指标均围绕这一输出进行评估。",
+    body: "最终输出仅包含目标说话人的单路语音。报告中的指标、参考语音探针和 demo 音频均围绕这一输出进行评估。",
   },
 };
 function pctGain(value, base) {
@@ -209,10 +209,10 @@ function drawArchitecture() {
   const nodes = [
     ["混合语音", "2-3 人 + 噪声", 70, 210, 180, 112, palette.amber],
     ["STFT 编码", "波形转时频图", 335, 210, 164, 112, palette.cyan],
-    ["EGSP", "目标频谱预增强", 585, 120, 190, 116, palette.green],
+    ["EGSP 探针", "频域负结果", 585, 120, 190, 116, palette.green],
     ["说话人条件", "目标身份绑定", 585, 340, 190, 116, palette.cyan],
-    ["幅度掩码主干", "5-block TF-GridNet-Lite", 895, 210, 220, 112, palette.cyan],
-    ["锚点复核", "泄漏 sanity", 1210, 120, 190, 116, palette.red],
+    ["TD-SpeakerBeam", "条件分离主干", 895, 210, 220, 112, palette.cyan],
+    ["多参考聚合", "embedding pooling", 1210, 120, 190, 116, palette.green],
     ["目标语音", "单路干净输出", 1210, 340, 190, 116, palette.green],
   ];
   nodes.forEach(([label, sub, x, y, bw, bh, color]) => {
@@ -227,8 +227,8 @@ function drawArchitecture() {
   ].forEach((p) => line(ctx, ...p, palette.cyan, 4));
   drawWave(ctx, 78, 95, 1260, 64, 31, "rgba(255,207,119,0.74)", 0.85);
   drawWave(ctx, 78, 525, 1260, 64, 41, "rgba(98,227,255,0.74)", 0.65);
-  text(ctx, "CAFE-TSE 目标说话人提取流程", 70, 56, 28, "#eef5f8", 800);
-  text(ctx, "参考语音提供身份线索；锚点高分经复核后被降级为泄漏警示", 70, 88, 16, palette.muted, 500);
+  text(ctx, "TD-SpeakerBeam 目标说话人提取流程", 70, 56, 28, "#eef5f8", 800);
+  text(ctx, "参考语音提供身份线索；错误参考和多参考聚合用于验证目标选择机制", 70, 88, 16, palette.muted, 500);
 }
 
 function drawCaseSpectrum(ctx, x, y, w, h, profile, row, rowIndex) {
@@ -272,14 +272,14 @@ function drawBarChart() {
   const { width: w, height: h } = el;
   clear(ctx, w, h);
   const data = [
-    ["基线", baseline.sdr, palette.muted],
-    ["幅度掩码", 1.1810, palette.amber],
-    ["无泄漏复训", finalSystem.sdr, palette.red],
+    ["Open SB", 10.34, palette.muted],
+    ["单参考学生", 10.591, palette.amber],
+    ["2-enroll", 10.799, palette.green],
   ];
-  text(ctx, `SDR 主指标：无泄漏复训暴露泛化瓶颈 ${dbGain(finalSystem.sdr, baseline.sdr).toFixed(2)} dB`, 34, 42, 18, palette.muted, 600);
+  text(ctx, "SDR 主指标：可靠主干 + embedding pooling 稳定超过 10 dB", 34, 42, 18, palette.muted, 600);
   data.forEach(([label, value, color], i) => {
     const x = 90 + i * 190;
-    const bh = Math.max(8, Math.abs(value) / 1.4 * 230);
+    const bh = Math.max(8, (value - 9.8) / 1.2 * 230);
     ctx.fillStyle = color;
     ctx.fillRect(x, 350 - bh, 88, bh);
     text(ctx, value.toFixed(3), x, 330 - bh, 18, color, 800);
@@ -293,9 +293,9 @@ function drawRadar() {
   clear(ctx, w, h);
   const cx = w / 2;
   const cy = h / 2 + 8;
-  const axes = ["SI-SDR", "SDR", "SIR", "PESQ", "效率"];
-  const values = [0.12, 0.10, 0.16, 1.54 / 4.5, 0.82];
-  text(ctx, "综合能力雷达：无泄漏质量弱，效率仍较好", 28, 34, 15, palette.muted, 600);
+  const axes = ["SI-SDR", "SIR", "SAR", "STOI", "PESQ"];
+  const values = [10.804 / 12.52, 23.224 / 27.05, 11.517 / 12.0, 0.546 / 0.60, 1.313 / 1.5];
+  text(ctx, "综合能力雷达：失真、干扰抑制和感知指标共同评估", 28, 34, 15, palette.muted, 600);
   for (let r = 1; r <= 4; r += 1) {
     ctx.strokeStyle = "rgba(98,227,255,0.16)";
     ctx.beginPath();
@@ -330,29 +330,29 @@ function drawLineChart() {
   const [el, ctx] = canvas("lineChart");
   const { width: w, height: h } = el;
   clear(ctx, w, h);
-  const points = [[0.0, 0.0710], [0.1, -1.45], [0.2, -3.21], [0.3, -5.1556]];
+  const points = [[0.00, 10.586], [0.02, 10.464], [0.05, 10.348], [0.10, 10.288], [0.20, 10.186], [0.30, 10.079]];
   line(ctx, 70, 340, 690, 340, palette.line, 1);
   line(ctx, 70, 60, 70, 340, palette.line, 1);
   ctx.strokeStyle = palette.cyan;
   ctx.lineWidth = 3;
   ctx.beginPath();
   points.forEach(([beta, sdr], i) => {
-    const x = 70 + i * 170;
-    const y = 120 + Math.abs(sdr) / 5.5 * 240;
+    const x = 70 + i * 105;
+    const y = 320 - (sdr - 10.0) / 0.65 * 230;
     if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
   });
   ctx.stroke();
   points.forEach(([beta, sdr], i) => {
-    const x = 70 + i * 170;
-    const y = 120 + Math.abs(sdr) / 5.5 * 240;
+    const x = 70 + i * 105;
+    const y = 320 - (sdr - 10.0) / 0.65 * 230;
     ctx.fillStyle = palette.green;
     ctx.beginPath();
     ctx.arc(x, y, 6, 0, Math.PI * 2);
     ctx.fill();
-    text(ctx, `β ${beta}`, x - 20, 370, 13, palette.muted, 600);
+    text(ctx, beta.toFixed(2), x - 18, 370, 13, palette.muted, 600);
     text(ctx, sdr.toFixed(2), x - 14, y - 14, 13, palette.green, 700);
   });
-  text(ctx, "参考锚点复核：disjoint enrollment 下权重越大越伤害指标", 42, 36, 18, palette.muted, 600);
+  text(ctx, "EGSP 推理探针：strength 越大，SI-SDR 越低", 42, 36, 18, palette.muted, 600);
 }
 
 function drawEfficiency() {
@@ -360,11 +360,11 @@ function drawEfficiency() {
   const { width: w, height: h } = el;
   clear(ctx, w, h);
   const rings = [
-    ["参数量", finalSystem.params / baseline.params, `减少 ${pctReduction(finalSystem.params, baseline.params).toFixed(1)}%`, palette.green],
-    ["MACs", finalSystem.macs / baseline.macs, `降低 ${pctReduction(finalSystem.macs, baseline.macs).toFixed(1)}%`, palette.cyan],
-    ["RTF", finalSystem.rtf / baseline.rtf, `效率提升 ${pctReduction(finalSystem.rtf, baseline.rtf).toFixed(1)}%`, palette.amber],
+    ["Small", 8.16 / 12.52, "8.16 dB", palette.muted],
+    ["Mid", 10.43 / 12.52, "10.43 dB", palette.cyan],
+    ["Teacher", 1.0, "12.52 dB", palette.amber],
   ];
-  text(ctx, "轻量化效率：参数、MACs 与 RTF 同时下降", 34, 40, 18, palette.muted, 600);
+  text(ctx, "容量对照：更大分离主干显著提高目标提取质量", 34, 40, 18, palette.muted, 600);
   rings.forEach(([label, v, note, color], i) => {
     const x = 150 + i * 210;
     const y = 194;
@@ -387,20 +387,20 @@ function drawStress() {
   const { width: w, height: h } = el;
   clear(ctx, w, h);
   const data = [
-    ["2人 β.30", 6.5043, 6.6228, palette.green],
-    ["同源 β.30", 6.5043, 6.6228, palette.amber],
-    ["无泄漏 β.30", -5.2613, -5.1556, palette.red],
+    ["数据泄漏", 1.06, 10.32, palette.cyan],
+    ["从零蒸馏", 10.43, 10.26, palette.red],
+    ["EGSP", 10.586, 10.079, palette.red],
   ];
-  text(ctx, "锚点复核：同源 sanity 高分在无泄漏设置下不可复现", 40, 42, 18, palette.muted, 600);
-  data.forEach(([label, sdr, sdri, color], i) => {
+  text(ctx, "失败案例：问题定位比堆叠模块更重要", 40, 42, 18, palette.muted, 600);
+  data.forEach(([label, before, after, color], i) => {
     const x = 96 + i * 360;
     ctx.fillStyle = color;
-    ctx.fillRect(x, 350 - Math.abs(sdr) * 28, 86, Math.abs(sdr) * 28);
+    ctx.fillRect(x, 350 - before * 18, 86, before * 18);
     ctx.fillStyle = color + "88";
-    ctx.fillRect(x + 110, 350 - sdri * 22, 86, sdri * 22);
+    ctx.fillRect(x + 110, 350 - after * 18, 86, after * 18);
     text(ctx, label, x - 8, 382, 15, "#eef5f8", 700);
-    text(ctx, `SDR ${sdr.toFixed(2)}`, x - 6, 350 - Math.abs(sdr) * 28 - 12, 13, color, 700);
-    text(ctx, `SI-SDRi ${sdri.toFixed(2)}`, x + 94, 350 - sdri * 22 - 12, 13, color, 700);
+    text(ctx, before.toFixed(2), x - 6, 350 - before * 18 - 12, 13, color, 700);
+    text(ctx, after.toFixed(2), x + 94, 350 - after * 18 - 12, 13, color, 700);
   });
 }
 
@@ -408,7 +408,7 @@ function drawTrainChart() {
   const [el, ctx] = canvas("trainChart");
   const { width: w, height: h } = el;
   clear(ctx, w, h);
-  const values = [0.116, 0.110, 0.189, 0.224, 0.180, 0.242, 0.294, 0.222, 0.328, 0.299, 0.241, 0.277, 0.290, 0.323, 0.309, 0.251, 0.251, 0.294, 0.193];
+  const values = [10.43, 10.26, 10.59, 10.557, 10.577, 10.804];
   line(ctx, 64, 338, 700, 338, palette.line, 1);
   line(ctx, 64, 60, 64, 338, palette.line, 1);
   ctx.strokeStyle = palette.green;
@@ -416,12 +416,12 @@ function drawTrainChart() {
   ctx.beginPath();
   values.forEach((v, i) => {
     const x = 64 + i * (620 / (values.length - 1));
-    const y = 338 - v / 0.36 * 250;
+    const y = 338 - (v - 10.2) / 0.7 * 250;
     if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
   });
   ctx.stroke();
-  text(ctx, "训练收敛：小样本可 overfit，但 disjoint 泛化不足", 34, 36, 18, palette.muted, 600);
-  text(ctx, "复核显示需要更强 speaker encoder 和更大无泄漏训练集", 34, 386, 13, palette.muted, 500);
+  text(ctx, "训练诊断：蒸馏和 EGSP 均需与监督基线公平比较", 34, 36, 18, palette.muted, 600);
+  text(ctx, "顺序：mid supervised / from-scratch distill / fine-tune / EGSP .02 / EGSP .05 / pooling", 34, 386, 13, palette.muted, 500);
 }
 
 function drawDifficultyChart() {
@@ -429,20 +429,23 @@ function drawDifficultyChart() {
   const { width: w, height: h } = el;
   clear(ctx, w, h);
   const data = [
-    ["easy", 0.62, 6.9],
-    ["medium", 0.48, 6.4],
-    ["hard", 0.39, 5.8],
+    ["k=1", 10.586, 0.544],
+    ["k=2", 10.804, 0.546],
+    ["k=4", 10.684, 0.545],
+    ["k=8", 10.662, 0.545],
   ];
-  text(ctx, "难度分组：早期图仅作探索记录，最终以无泄漏复训为准", 34, 40, 18, palette.muted, 600);
-  data.forEach(([label, oldVal, newVal], i) => {
-    const x = 100 + i * 190;
-    ctx.fillStyle = palette.muted;
-    ctx.fillRect(x, 350 - oldVal * 80, 54, oldVal * 80);
+  text(ctx, "多参考聚合：k=2 最优，继续增加参考没有继续提升", 34, 40, 18, palette.muted, 600);
+  data.forEach(([label, sisdr, stoi], i) => {
+    const x = 80 + i * 150;
+    const sisdrH = (sisdr - 10.4) * 520;
+    const stoiH = stoi * 420;
+    ctx.fillStyle = palette.cyan;
+    ctx.fillRect(x, 350 - sisdrH, 44, sisdrH);
     ctx.fillStyle = palette.green;
-    ctx.fillRect(x + 70, 350 - newVal * 34, 54, newVal * 34);
+    ctx.fillRect(x + 58, 350 - stoiH, 44, stoiH);
     text(ctx, label, x + 20, 382, 14, "#eef5f8", 700);
-    text(ctx, "旧", x + 12, 350 - oldVal * 80 - 10, 12, palette.muted, 700);
-    text(ctx, "锚点", x + 58, 350 - newVal * 34 - 10, 12, palette.green, 700);
+    text(ctx, "SI-SDR", x - 4, 350 - sisdrH - 10, 12, palette.cyan, 700);
+    text(ctx, "STOI", x + 58, 350 - stoiH - 10, 12, palette.green, 700);
   });
 }
 
@@ -451,18 +454,19 @@ function drawRobustChart() {
   const { width: w, height: h } = el;
   clear(ctx, w, h);
   const data = [
-    ["同源参考", 6.50, palette.amber],
-    ["无泄漏参考", 0.07, palette.green],
-    ["锚点 β=.30", -5.16, palette.red],
-    ["噪声参考", -1.20, palette.red],
+    ["correct", 10.586, palette.green],
+    ["short 1s", 9.191, palette.amber],
+    ["noisy 5 dB", 7.318, palette.amber],
+    ["shuffled", -7.318, palette.red],
+    ["interferer", -23.493, palette.red],
   ];
-  text(ctx, "参考语音复核：同源高分不能代表真实 disjoint 泛化", 34, 42, 18, palette.muted, 600);
+  text(ctx, "参考语音鲁棒性：错误身份比噪声更致命", 34, 42, 18, palette.muted, 600);
   data.forEach(([label, v, color], i) => {
     const y = 90 + i * 70;
     ctx.fillStyle = "rgba(38,51,64,0.75)";
     ctx.fillRect(160, y, 470, 22);
     ctx.fillStyle = color;
-    ctx.fillRect(160, y, Math.max(8, Math.abs(v) / 7 * 470), 22);
+    ctx.fillRect(160, y, Math.max(8, (v + 24) / 36 * 470), 22);
     text(ctx, label, 36, y + 17, 14, "#eef5f8", 700);
     text(ctx, `${v.toFixed(2)} dB`, 648, y + 17, 13, color, 800);
   });
@@ -473,19 +477,20 @@ function drawWaterfallChart() {
   const { width: w, height: h } = el;
   clear(ctx, w, h);
   const steps = [
-    ["基线", 0.0522, palette.muted],
-    ["EGSP", 0.3910, palette.cyan],
-    ["幅度掩码", 1.1810, palette.amber],
-    ["泄漏复核", -5.1556, palette.red],
+    ["自写原型", 1.06, palette.red],
+    ["Open SB", 10.32, palette.cyan],
+    ["Mid student", 10.43, palette.green],
+    ["Distill FT", 10.59, palette.amber],
+    ["2-enroll", 10.80, palette.green],
   ];
-  text(ctx, "模块贡献路径：锚点高分被复核为泄漏风险", 34, 42, 18, palette.muted, 600);
+  text(ctx, "系统诊断路径：可靠主干和参考验证带来可信结果", 34, 42, 18, palette.muted, 600);
   steps.forEach(([label, v, color], i) => {
-    const x = 78 + i * 165;
-    const y = 340 - Math.abs(v) / 7 * 260;
+    const x = 48 + i * 130;
+    const y = 340 - v / 12 * 260;
     roundRect(ctx, x, y, 100, 340 - y, 6, color + "aa", color);
     text(ctx, label, x - 10, 374, 13, "#eef5f8", 700);
     text(ctx, v.toFixed(2), x + 18, y - 12, 14, color, 800);
-    if (i < steps.length - 1) line(ctx, x + 100, y, x + 165, 340 - Math.abs(steps[i + 1][1]) / 7 * 260, palette.cyan, 2);
+    if (i < steps.length - 1) line(ctx, x + 100, y, x + 130, 340 - steps[i + 1][1] / 12 * 260, palette.cyan, 2);
   });
 }
 
@@ -496,10 +501,10 @@ function drawCognition() {
   const steps = [
     ["目标设定", "参考语音确定要听谁", palette.amber],
     ["对象绑定", "音色与时频线索合并", palette.cyan],
-    ["预增强", "EGSP 抬高目标频带", palette.green],
-    ["掩蔽抑制", "幅度掩码压低干扰", palette.cyan],
-    ["资源预算", "轻量主干减少计算", palette.red],
-    ["实验复核", "排查参考泄漏", palette.red],
+    ["频域探针", "EGSP 负结果提醒训练一致性", palette.green],
+    ["条件分离", "TD-SpeakerBeam 抑制干扰", palette.cyan],
+    ["容量预算", "学生/教师模型对照", palette.red],
+    ["实验复核", "错误参考检查身份依赖", palette.red],
   ];
   steps.forEach(([title, desc, color], i) => {
     const x = 48 + i * 204;

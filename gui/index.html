@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>CAFE-TSE 交互式系统展示台</title>
+  <title>TD-SpeakerBeam 目标说话人提取展示台</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -12,8 +12,8 @@
       <div class="brand">
         <span class="brand-mark" aria-hidden="true"></span>
         <div>
-          <strong>CAFE-TSE</strong>
-          <span>鸡尾酒会语音分离展示台</span>
+          <strong>TD-SpeakerBeam TSE</strong>
+          <span>鸡尾酒会目标说话人提取展示台</span>
         </div>
       </div>
       <nav class="nav" aria-label="展示台导航">
@@ -23,9 +23,9 @@
         <button class="nav-item" data-view="cognition">认知映射</button>
       </nav>
       <div class="side-metrics">
-        <span>无泄漏 SI-SDRi</span><strong>0.0710 dB</strong>
-        <span>锚点复核</span><strong>-5.1556 dB</strong>
-        <span>参数量</span><strong>200,962</strong>
+        <span>最终 SI-SDR</span><strong>10.80 dB</strong>
+        <span>单参考学生</span><strong>10.59 dB</strong>
+        <span>测试样本</span><strong>800</strong>
       </div>
     </aside>
 
@@ -36,17 +36,17 @@
           <div class="hero-copy">
             <p class="eyebrow">Cocktail-party target speech extraction</p>
             <h1>参考声音引导的目标说话人提取</h1>
-            <p>CAFE-TSE 把人类听觉注意拆成可计算的三步：用参考语音确定“听谁”，用频谱预增强突出目标线索，再用轻量掩码主干完成目标提取；最终复核同时展示了参考泄漏会怎样制造虚高指标。</p>
+            <p>系统用参考语音指定“听谁”，用 TD-SpeakerBeam 提取目标说话人，并通过错误参考、短参考、带噪参考和多参考 embedding pooling 检查模型是否真正依赖目标身份线索。</p>
             <div class="hero-stats">
-              <article><span>无泄漏 SI-SDRi</span><strong>0.0710 dB</strong></article>
-              <article><span>复训练样本</span><strong>652/150/100</strong></article>
-              <article><span>泄漏锚点复核</span><strong>-5.1556 dB</strong></article>
+              <article><span>2-enroll pooling</span><strong>10.80 dB</strong></article>
+              <article><span>说话人数</span><strong>80</strong></article>
+              <article><span>train/valid/test</span><strong>8000/800/800</strong></article>
             </div>
             <div class="hero-tags" aria-label="核心模块">
               <span>参考语音条件</span>
-              <span>EGSP 频谱预增强</span>
-              <span>5-block 轻量主干</span>
-              <span>泄漏复核</span>
+              <span>TD-SpeakerBeam 主干</span>
+              <span>Enrollment sanity check</span>
+              <span>Embedding-level pooling</span>
             </div>
           </div>
         </header>
@@ -54,7 +54,7 @@
         <article class="panel architecture-stage">
           <div class="panel-head">
             <div>
-              <h2>交互式系统架构图</h2>
+            <h2>交互式系统架构图</h2>
               <p>悬停任一模块查看它在鸡尾酒会目标说话人提取中的作用。</p>
             </div>
             <span class="hint">悬停查看说明</span>
@@ -99,8 +99,8 @@
           </article>
           <article class="audio-stack">
             <div class="audio-card" data-track="mixture"><span>混合语音</span><button class="play-btn" aria-label="播放混合语音"></button><audio preload="metadata"></audio></div>
-            <div class="audio-card accent" data-track="ours"><span>CAFE-TSE 输出</span><button class="play-btn" aria-label="播放 CAFE-TSE 输出"></button><audio preload="metadata"></audio></div>
-            <div class="audio-card" data-track="baseline"><span>基线模型</span><button class="play-btn" aria-label="播放基线模型"></button><audio preload="metadata"></audio></div>
+            <div class="audio-card accent" data-track="ours"><span>目标提取输出</span><button class="play-btn" aria-label="播放目标提取输出"></button><audio preload="metadata"></audio></div>
+            <div class="audio-card" data-track="baseline"><span>早期基线输出</span><button class="play-btn" aria-label="播放早期基线输出"></button><audio preload="metadata"></audio></div>
             <div class="audio-card" data-track="target"><span>目标真值</span><button class="play-btn" aria-label="播放目标真值"></button><audio preload="metadata"></audio></div>
           </article>
         </div>
@@ -116,13 +116,13 @@
         <div class="chart-grid">
           <article class="panel"><h2>主指标对比</h2><canvas id="barChart" width="760" height="420"></canvas></article>
           <article class="panel"><h2>综合能力雷达图</h2><canvas id="radarChart" width="760" height="420"></canvas></article>
-          <article class="panel"><h2>参考锚点权重扫描</h2><canvas id="lineChart" width="760" height="420"></canvas></article>
-          <article class="panel"><h2>轻量化效率</h2><canvas id="effChart" width="760" height="420"></canvas></article>
-          <article class="panel"><h2>训练收敛曲线</h2><canvas id="trainChart" width="760" height="420"></canvas></article>
-          <article class="panel"><h2>难度分组表现</h2><canvas id="difficultyChart" width="760" height="420"></canvas></article>
+          <article class="panel"><h2>EGSP 频域探针</h2><canvas id="lineChart" width="760" height="420"></canvas></article>
+          <article class="panel"><h2>容量与蒸馏</h2><canvas id="effChart" width="760" height="420"></canvas></article>
+          <article class="panel"><h2>训练诊断</h2><canvas id="trainChart" width="760" height="420"></canvas></article>
+          <article class="panel"><h2>多参考聚合</h2><canvas id="difficultyChart" width="760" height="420"></canvas></article>
           <article class="panel"><h2>参考语音鲁棒性</h2><canvas id="robustChart" width="760" height="420"></canvas></article>
-          <article class="panel"><h2>模块贡献瀑布图</h2><canvas id="waterfallChart" width="760" height="420"></canvas></article>
-          <article class="panel wide"><h2>三说话人压力测试</h2><canvas id="stressChart" width="1300" height="420"></canvas></article>
+          <article class="panel"><h2>系统诊断路径</h2><canvas id="waterfallChart" width="760" height="420"></canvas></article>
+          <article class="panel wide"><h2>失败案例与修正</h2><canvas id="stressChart" width="1300" height="420"></canvas></article>
         </div>
       </section>
 
@@ -136,10 +136,10 @@
         <div class="cog-grid">
           <article class="cog-card"><span>注意目标设定</span><strong>参考语音</strong><p>人在嘈杂环境中不是平均聆听所有声音，而是先形成“我要听这个人”的内部目标。参考语音在系统中承担同样角色：它给出目标说话人的音色、发声习惯和长期频谱轮廓，使任务从盲源分离变成目标导向提取。</p></article>
           <article class="cog-card"><span>听觉对象形成</span><strong>说话人条件</strong><p>人脑会把基频、共振峰、音色、起止时间和短时连续性绑定成一个稳定的听觉对象。模型把参考语音编码成说话人条件，并注入时频主干，让混合语音里与目标身份一致的结构获得更高权重。</p></article>
-          <article class="cog-card"><span>自上而下调制</span><strong>EGSP 预增强</strong><p>注意不是只在听到之后再选择，也会提前改变对声学线索的敏感度。EGSP 使用目标频谱画像对混合频带做预增强，相当于让模型先把“可能属于目标”的频带抬高，再交给分离网络判断。</p></article>
-          <article class="cog-card"><span>掩蔽抑制</span><strong>幅度掩码</strong><p>鸡尾酒会听觉依赖对干扰声源的持续抑制。幅度掩码头在每个时频单元估计保留比例，压低非目标人声和噪声成分，把“听觉过滤”落到可解释的时频选择上。</p></article>
-          <article class="cog-card"><span>注意资源预算</span><strong>轻量主干</strong><p>人的注意资源有限，系统的计算预算也有限。5-block 主干用更少参数和 MACs 保持核心分离能力，适合把目标说话人提取放到实时或边缘场景中展示。</p></article>
-          <article class="cog-card"><span>实验复核</span><strong>参考泄漏审计</strong><p>人在复杂听觉环境中需要不断确认“听到的是不是目标”。系统实验也需要同样的复核：无泄漏 disjoint enrollment 显示，直接把参考语音当输出锚点会破坏指标，因此锚点只保留为失败案例。</p></article>
+          <article class="cog-card"><span>自上而下调制</span><strong>频域探针</strong><p>参考语音可以提示目标声纹，但推理时硬加 EGSP 会造成分布偏移。本项目把它作为负结果讨论，说明认知启发模块也必须经过训练一致性检验。</p></article>
+          <article class="cog-card"><span>掩蔽抑制</span><strong>条件掩码</strong><p>TD-SpeakerBeam 根据目标 embedding 调制分离网络，压低非目标人声，把“听觉过滤”落到可训练的时域掩码估计上。</p></article>
+          <article class="cog-card"><span>注意资源预算</span><strong>学生模型</strong><p>small、mid 和 strong teacher 的容量对照用于分析计算资源与分离质量之间的关系。容量提升比从零蒸馏更稳定。</p></article>
+          <article class="cog-card"><span>熟悉声纹记忆</span><strong>多参考聚合</strong><p>两条同说话人参考语音在 embedding 层平均后，能形成更稳定的目标身份线索，将学生模型 SI-SDR 提升到 10.80 dB。</p></article>
         </div>
         <article class="panel">
           <h2>听觉注意计算流程</h2>

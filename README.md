@@ -1,4 +1,13 @@
-# CAFE-TSE
+# TD-SpeakerBeam Target Speaker Extraction Course Project
+
+Final report note: the submitted report uses TD-SpeakerBeam as the reliable
+target-speaker extraction backbone. The earlier CAFE-TSE / TF-GridNet-Lite code
+is kept as an exploratory prototype and failure-analysis branch; it is not the
+final reported high-score system. The final Task 2 results are organized around
+shared-clean80 TD-SpeakerBeam training, teacher/student comparisons, enrollment
+sanity checks, EGSP diagnostics, and embedding-level multi-enrollment pooling.
+
+# CAFE-TSE prototype
 
 CAFE-TSE is a PyTorch implementation of Curriculum-Aware Frequency-Efficient Target Speaker Extraction for the cocktail-party course project.
 
