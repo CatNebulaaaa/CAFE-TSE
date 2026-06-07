@@ -1,0 +1,68 @@
+{
+  "clean_2spk": {
+    "si_sdr": 10.585816705636681,
+    "si_sdri": 10.58105277478855,
+    "sdr": 10.590915511846543,
+    "sir": 22.898743509054185,
+    "sar": 11.398194150365889,
+    "stoi": 0.5443425455298886,
+    "pesq": 1.3086393496394157,
+    "manifest": "data/metadata/librispeech_tse_shared_clean80/test_manifest_final.csv",
+    "seconds": 109.84
+  },
+  "babble_20db_2spk": {
+    "si_sdr": 9.770116336117498,
+    "si_sdri": 9.872901427077158,
+    "sdr": 9.77524609040469,
+    "sir": 21.98664345418103,
+    "sar": 10.7243070204556,
+    "stoi": 0.5350663016943031,
+    "pesq": 1.3061927162110805,
+    "manifest": "data/metadata/librispeech_tse_shared_clean80/mixture_snr_variants/mixture_babble_20db.csv",
+    "seconds": 110.93
+  },
+  "babble_10db_2spk": {
+    "si_sdr": 5.9413573981606165,
+    "si_sdri": 6.8841632775374455,
+    "sdr": 5.944147593915695,
+    "sir": 16.578402590677143,
+    "sar": 7.982640046263113,
+    "stoi": 0.5201052780435976,
+    "pesq": 1.3045106530189514,
+    "manifest": "data/metadata/librispeech_tse_shared_clean80/mixture_snr_variants/mixture_babble_10db.csv",
+    "seconds": 111.26
+  },
+  "babble_5db_2spk": {
+    "si_sdr": 3.3581515051820316,
+    "si_sdri": 5.781972783470992,
+    "sdr": 3.3585950125695674,
+    "sir": 13.361726308614015,
+    "sar": 5.877176693290239,
+    "stoi": 0.5089873898266397,
+    "pesq": 1.2775791536271572,
+    "manifest": "data/metadata/librispeech_tse_shared_clean80/mixture_snr_variants/mixture_babble_5db.csv",
+    "seconds": 113.93
+  },
+  "babble_0db_2spk": {
+    "si_sdr": 0.9056436895567458,
+    "si_sdri": 6.075414049102692,
+    "sdr": 0.9058969104953576,
+    "sir": 10.186677662683651,
+    "sar": 3.91620020610746,
+    "stoi": 0.4947794050345894,
+    "pesq": 1.273994217813015,
+    "manifest": "data/metadata/librispeech_tse_shared_clean80/mixture_snr_variants/mixture_babble_0db.csv",
+    "seconds": 115.62
+  },
+  "clean_3spk": {
+    "si_sdr": 2.67439343027072,
+    "si_sdri": 7.182450794315973,
+    "sdr": 2.6763385847047902,
+    "sir": 9.63785144180176,
+    "sar": 5.604399285186082,
+    "stoi": 0.5042429390462625,
+    "pesq": 1.278957749903202,
+    "manifest": "data/metadata/librispeech_tse_shared_clean80/three_speaker_stress/test_manifest_final.csv",
+    "seconds": 118.69
+  }
+}

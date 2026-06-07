@@ -1,0 +1,17 @@
+# Install torch/torchaudio separately for the target CUDA version, for example:
+# pip install torch torchaudio --index-url https://download.pytorch.org/whl/cu121
+numpy
+scipy
+pandas
+soundfile
+librosa
+pyyaml
+tqdm
+mir_eval
+museval
+fast-bss-eval
+pesq
+pystoi
+thop
+pytest
+rich
