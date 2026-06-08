@@ -74,6 +74,12 @@
 \newpage
 \setcounter{page}{1}
 
+{\centering\zihao{3}\heiti 人工智能与人类智能的多维度对比分析\par}
+\vspace{2\baselineskip}
+{\centering\zihao{4}\songti 王志翔\par}
+{\centering\zihao{-5}\songti （2024级~~人工智能专业~~22920242203422）\par}
+\vspace{\baselineskip}
+
 \section{任务一：人工智能与人类智能的多维度对比分析}
 
 \subsection{问题引入：为什么不能只用“强弱”评价智能}
@@ -247,6 +253,12 @@
 人工智能与人类智能不是同一把尺子上的简单高低关系。AI 在可数据化、可形式化、可评价的任务中进步很快，并在许多专业领域成为有效工具；人类则在具身经验、社会情境、价值判断和开放世界适应方面更有优势。因此，“超越人类”应限定在具体任务和评价指标中讨论。更现实的方向是人机协同：AI 承担大规模计算、检索、生成和优化任务，人类负责目标设定、价值判断、责任承担和复杂情境理解。
 
 \newpage
+
+{\centering\zihao{3}\heiti 基于 TD-SpeakerBeam 的目标说话人提取系统\par}
+\vspace{2\baselineskip}
+{\centering\zihao{4}\songti 王志翔\par}
+{\centering\zihao{-5}\songti （2024级~~人工智能专业~~22920242203422）\par}
+\vspace{\baselineskip}
 
 \section{任务二：鸡尾酒会问题模拟：基于 TD-SpeakerBeam 的目标说话人提取系统}
 
@@ -789,7 +801,7 @@ DEMAND $+5$ dB & 28 & 4.12 & 4.37 & 6.84 & 4.13 & 11.82 \\
 
 表 \ref{tab:noise} 显示，加入 DEMAND 咖啡厅环境噪声后分离质量呈现清晰的单调下降。$+20$ dB 条件下仅下降 0.68 dB（均值），说明轻度环境噪声对模型影响很小；$+10$ dB 下降 4.22 dB；$+5$ dB 下降 7.74 dB，退化幅度随噪声增强而逐步增大。所有噪声条件下的 \sisdr{}i 均为正值（6.84--11.64 dB），确认模型在真实环境噪声下仍能从 mixture 中提取目标说话人并取得相对增益。中位数与均值非常接近（差异 $<$ 0.4 dB），说明结果未受极端值主导。
 
-与主实验中 babble 噪声压力测试（表 \ref{tab:stress}）相比：$+10$ dB 下 babble 为 5.94 dB，DEMAND 为 7.64 dB；$+5$ dB 下 babble 为 3.36 dB，DEMAND 为 4.12 dB。DEMAND 条件下的绝对 \sisdr{} 略高于 babble，推测因为 babble 噪声包含更多人声干扰频率成分，而 DEMAND 咖啡厅噪声的频谱分布与目标语音重叠较少。需要指出，本实验筛选了 clean \sisdr{} $>$ 0 dB 的样本（28/30），由于本实验筛除了 clean SI-SDR $\le 0$ dB 的异常样本，结果更适合作为"正常样本上的真实噪声压力测试"，不完全等同于完整测试集统计，clean 均值 11.86 dB 相比完整测试集 10.59 dB 略有偏高属预期行为。
+与主实验中 babble 噪声压力测试（表 \ref{tab:stress}）相比：$+10$ dB 下 babble 为 5.94 dB，DEMAND 为 7.64 dB；$+5$ dB 下 babble 为 3.36 dB，DEMAND 为 4.12 dB。DEMAND 条件下的绝对 \sisdr{} 略高于 babble，推测因为 babble 噪声包含更多人声干扰频率成分，而 DEMAND 咖啡厅噪声的频谱分布与目标语音重叠较少。需要指出，本实验筛选了 clean \sisdr{} $>$ 0 dB 的样本（28/30），由于本实验筛除了 clean SI-SDR $\le 0$ dB 的异常样本，结果更适合作为"“正常样本上的真实噪声压力测试”"，不完全等同于完整测试集统计，clean 均值 11.86 dB 相比完整测试集 10.59 dB 略有偏高属预期行为。
 
 \subsubsection{中英跨语言泛化测试}
 
@@ -835,6 +847,12 @@ DEMAND $+5$ dB & 28 & 4.12 & 4.37 & 6.84 & 4.13 & 11.82 \\
 本系统的主要局限是未显式建模空间声源定位，尚未利用双耳线索、DOA 或麦克风阵列信息；本文重点模拟目标驱动的选择性注意和声纹绑定。围绕数据构造、蒸馏和频域前端的诊断实验进一步给出三点经验：target/enrollment 必须严格 disjoint 并保证说话人标签正确；有干净目标监督时，从零波形蒸馏并不稳定；频域前端即使在训练阶段集成仍需谨慎调参，不能仅在推理阶段硬加。本文完成了从认知任务到可运行语音系统的建模、实现、评估和反思，为后续加入更稳健的参考语音增强、训练时频域前端、复杂度感知推理、多语言训练或双耳/阵列空间线索建模提供了实验基础。
 
 \clearpage
+
+{\centering\zihao{3}\heiti 神经网络与反向传播的人类学习机制映射\par}
+\vspace{2\baselineskip}
+{\centering\zihao{4}\songti 王志翔\par}
+{\centering\zihao{-5}\songti （2024级~~人工智能专业~~22920242203422）\par}
+\vspace{\baselineskip}
 
 \section{任务三：神经网络与反向传播的人类学习机制映射}
 
