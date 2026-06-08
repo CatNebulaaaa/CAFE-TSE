@@ -17,15 +17,15 @@
 
 | 实验 | 脚本 | 关键结果 |
 |------|------|----------|
-| 流式处理  | `scripts/streaming_demo.py`    | 32 s 音频 61 chunks，稳态 RTF 0.0028（350 倍实时），整体 RTF 0.018（55 倍实时） |
-| 真实噪声  | `scripts/test_real_noise.py`   | DEMAND 咖啡厅噪声：28 样本，+20/+10/+5 dB，SI-SDR 单调下降（11.86 → 11.18 → 7.64 → 4.12 dB） |
-| 跨语言    | `scripts/test_cross_lingual_batch.py` | 5 对/方向，zh→en 均值 −30.88 dB，en→zh 均值 −44.37 dB，全部失败 |
+| 流式处理  | `src/scripts/streaming_demo.py`    | 32 s 音频 61 chunks，稳态 RTF 0.0028（350 倍实时），整体 RTF 0.018（55 倍实时） |
+| 真实噪声  | `src/scripts/test_real_noise.py`   | DEMAND 咖啡厅噪声：28 样本，+20/+10/+5 dB，SI-SDR 单调下降（11.86 → 11.18 → 7.64 → 4.12 dB） |
+| 跨语言    | `src/scripts/test_cross_lingual_batch.py` | 5 对/方向，zh→en 均值 −30.88 dB，en→zh 均值 −44.37 dB，全部失败 |
 
-数据来源（CC BY 4.0 / Apache 2.0）：`results/data_sources.md`
+数据来源（CC BY 4.0 / Apache 2.0）：`src/results/data_sources.md`
 
 ## 交互式 Web 展示
 
-在浏览器中打开 `gui/index.html` 可查看：
+在浏览器中打开 `src/gui/index.html` 可查看：
 - 系统总览（架构图与核心指标）
 - 3 组可交互音频案例（A/B 对比播放）
 - 实验图表（雷达图、柱状图）
@@ -37,29 +37,30 @@
 
 ```
 final_submission/
-├── report/
-│   ├── 认知与计算课程报告_王志翔_22920242203422.pdf   （已编译，29 页）
-│   └── 认知与计算课程报告_王志翔_22920242203422.tex   （LaTeX 源码）
-├── scripts/
-│   ├── streaming_demo.py              （流式逐 chunk 推理）
-│   ├── test_real_noise.py             （真实噪声鲁棒性测试）
-│   ├── test_cross_lingual.py          （跨语言单对测试）
-│   ├── test_cross_lingual_batch.py    （跨语言批量测试）
-│   ├── train_open_speakerbeam.py      （TD-SpeakerBeam 训练）
-│   ├── evaluate_open_speakerbeam_variants.py  （参考语音变体评估）
-│   ├── evaluate_open_speakerbeam_multi_enroll.py  （多参考语音聚合）
-│   └── ...                            （更多训练/评估脚本）
-├── src/cafe_tse/                      （CAFE-TSE 原型 + 共享工具库）
-├── gui/                               （交互式 Web 展示）
-│   ├── index.html
-│   ├── styles.css
-│   ├── app.js
-│   └── assets/
+├── 22920242203422+王志翔.pdf          （已编译课程报告，29 页）
+├── README.md                          （本文件）
+├── requirements.txt                   （Python 依赖）
 ├── demo_audio/                        （3 组 demo 案例：mixture、target、baseline、ours）
-├── results/
-│   ├── data_sources.md                （数据来源与许可证）
-│   └── summary.md                     （实验总结）
-└── requirements.txt
+└── src/
+    ├── cafe_tse/                      （CAFE-TSE 原型 + 共享工具库）
+    ├── gui/                           （交互式 Web 展示）
+    │   ├── index.html
+    │   ├── styles.css
+    │   ├── app.js
+    │   └── assets/
+    ├── scripts/                       （训练、评估与附加实验脚本）
+    │   ├── streaming_demo.py              （流式逐 chunk 推理）
+    │   ├── test_real_noise.py             （真实噪声鲁棒性测试）
+    │   ├── test_cross_lingual.py          （跨语言单对测试）
+    │   ├── test_cross_lingual_batch.py    （跨语言批量测试）
+    │   ├── train_open_speakerbeam.py      （TD-SpeakerBeam 训练）
+    │   ├── evaluate_open_speakerbeam_variants.py  （参考语音变体评估）
+    │   └── ...                            （更多训练/评估脚本）
+    └── results/                       （实验输出与可视化）
+        ├── data_sources.md            （数据来源与许可证）
+        ├── summary.md                 （实验总结）
+        ├── figures/                   （实验图表）
+        └── ...                        （指标 CSV、JSON 等）
 ```
 
 ## 模型检查点
