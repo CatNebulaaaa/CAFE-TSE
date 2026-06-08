@@ -725,7 +725,7 @@ noisy 5 dB & 7.318 & 7.336 & 17.782 & 9.719 & 0.525 & 1.301 \\
     \item \textbf{系统总览}：以信息图形式总结系统架构、核心指标（最终 SI-SDR 10.80 dB，单参考学生 10.59 dB）和实验设计理念。
     \item \textbf{案例展厅}：提供 3 组可交互的 demo 音频案例，每组包含原始 mixture、干净 target、基线输出和本文模型输出，用户可点击播放对比。每个案例附有说话人来源、难度标签、SI-SDR 和 SIR 等指标。
     \item \textbf{实验图表}：以雷达图和柱状图展示不同实验条件下的指标对比，包括主模型对比、容量对照、enrollment sanity check 和多参考聚合结果。
-    \item \textbf{认知映射}：将鸡尾酒会问题的认知机制（选择性注意、特征绑定、资源分配）映射到 TD-SpeakerBeam 的计算组件（enrollment、speaker embedding、动态 block 路由）。
+    \item \textbf{认知映射}：将鸡尾酒会问题的认知机制（选择性注意、特征绑定、资源分配）映射到 TD-SpeakerBeam 的计算组件（enrollment、speaker embedding、条件调制和时域掩码估计）。
 \end{itemize}
 
 所有 demo 音频（\texttt{demo\_audio/} 目录）均来自 shared-clean80 测试集的实际输出，展示页面可离线运行。该页面服务于课程报告的辅助展示，不涉及后端或在线推理。
@@ -765,7 +765,7 @@ Chunk 数量 & \multicolumn{2}{r}{61} \\
 \subsubsection{DEMAND 真实环境噪声测试}
 
 \paragraph{设计。}
-噪声测试脚本（\texttt{scripts/test\_real\_noise.py}）采用两阶段设计。第一阶段对 =30$ 条测试样本进行 clean 推理，筛除 clean \sisdr{} $\leq 0$ dB 的异常样本（主要由 enrollment 过短或数据构造异常导致），保留 28 条。第二阶段对保留样本逐一施加 DEMAND 咖啡厅环境噪声，构造 3 种 SNR 条件：$+20$ dB、$+10$ dB、$+5$ dB。噪声数据来自 DEMAND（Diverse Environments Multichannel Acoustic Noise Database）PCAFETER 场景（CC BY 4.0），使用 ch01 声道，从 16 kHz 降采样至 8 kHz。对每种条件分别记录 \sisdr{}、\sisdr{}i、SDR、SIR 和 SAR，报告均值和中位数以检验极端值影响。全部数据来源、许可证和处理方式记录于 \texttt{data\_sources.md}。
+噪声测试脚本（\texttt{scripts/test\_real\_noise.py}）采用两阶段设计。第一阶段先对 30 条 clean 候选样本进行预筛选，剔除 clean SI-SDR $\le 0$ dB 的异常样本（主要由 enrollment 过短或数据构造异常导致），最终保留 28 条样本。第二阶段对保留样本逐一施加 DEMAND 咖啡厅环境噪声，构造 3 种 SNR 条件：$+20$ dB、$+10$ dB、$+5$ dB。噪声数据来自 DEMAND（Diverse Environments Multichannel Acoustic Noise Database）PCAFETER 场景（CC BY 4.0），使用 ch01 声道，从 16 kHz 降采样至 8 kHz。对每种条件分别记录 \sisdr{}、\sisdr{}i、SDR、SIR 和 SAR，报告均值和中位数以检验极端值影响。全部数据来源、许可证和处理方式记录于 \texttt{data\_sources.md}。
 
 \paragraph{结果。}
 
@@ -789,7 +789,7 @@ DEMAND $+5$ dB & 28 & 4.12 & 4.37 & 6.84 & 4.13 & 11.82 \\
 
 表 \ref{tab:noise} 显示，加入 DEMAND 咖啡厅环境噪声后分离质量呈现清晰的单调下降。$+20$ dB 条件下仅下降 0.68 dB（均值），说明轻度环境噪声对模型影响很小；$+10$ dB 下降 4.22 dB；$+5$ dB 下降 7.74 dB，退化幅度随噪声增强而逐步增大。所有噪声条件下的 \sisdr{}i 均为正值（6.84--11.64 dB），确认模型在真实环境噪声下仍能从 mixture 中提取目标说话人并取得相对增益。中位数与均值非常接近（差异 $<$ 0.4 dB），说明结果未受极端值主导。
 
-与主实验中 babble 噪声压力测试（表 \ref{tab:stress}）相比：$+10$ dB 下 babble 为 5.94 dB，DEMAND 为 7.64 dB；$+5$ dB 下 babble 为 3.36 dB，DEMAND 为 4.12 dB。DEMAND 条件下的绝对 \sisdr{} 略高于 babble，推测因为 babble 噪声包含更多人声干扰频率成分，而 DEMAND 咖啡厅噪声的频谱分布与目标语音重叠较少。需要指出，本实验筛选了 clean \sisdr{} $>$ 0 dB 的样本（28/30），筛选后的 clean 均值 11.86 dB 与主实验完整测试集 10.59 dB 基本可比。
+与主实验中 babble 噪声压力测试（表 \ref{tab:stress}）相比：$+10$ dB 下 babble 为 5.94 dB，DEMAND 为 7.64 dB；$+5$ dB 下 babble 为 3.36 dB，DEMAND 为 4.12 dB。DEMAND 条件下的绝对 \sisdr{} 略高于 babble，推测因为 babble 噪声包含更多人声干扰频率成分，而 DEMAND 咖啡厅噪声的频谱分布与目标语音重叠较少。需要指出，本实验筛选了 clean \sisdr{} $>$ 0 dB 的样本（28/30），由于本实验筛除了 clean SI-SDR $\le 0$ dB 的异常样本，结果更适合作为"正常样本上的真实噪声压力测试"，不完全等同于完整测试集统计，clean 均值 11.86 dB 相比完整测试集 10.59 dB 略有偏高属预期行为。
 
 \subsubsection{中英跨语言泛化测试}
 
