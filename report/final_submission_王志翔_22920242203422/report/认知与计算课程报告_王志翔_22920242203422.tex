@@ -736,27 +736,31 @@ noisy 5 dB & 7.318 & 7.336 & 17.782 & 9.719 & 0.525 & 1.301 \\
 流式处理脚本（\texttt{scripts/streaming\_demo.py}）以 chunk 为单位从 wav 文件读取混合语音，模拟实时多说话者语音分离场景。主要参数：chunk 2.0 秒（16000 采样点，$f_s = 8$ kHz），hop 0.5 秒（75\% 重叠），Hann 窗 overlap-add 拼接，参考语音全量预加载并复用每个 chunk，RMS 归一化与训练时 TSEDataset 保持一致。每个 chunk 依次经过归一化、模型推理和 overlap-add 重建，输出完整分离音频，同时记录每个 chunk 的延迟和实时率（RTF）。
 
 \paragraph{结果。}
-实验在 NVIDIA RTX 4080 SUPER 上运行，测试样本为 shared\_clean80 测试集中 test\_00000（2 秒音频），仅产生 1 个 chunk。
+实验在 NVIDIA RTX 4080 SUPER 上运行。以 32 秒混合语音（8 段 4 秒测试样本拼接）为输入，共计 61 个 chunk。首个 chunk 包含 CUDA 内核初始化开销，延迟 0.235 s（RTF 0.117）；后续 60 个 chunk 延迟稳定在 5.3--7.2 ms（RTF 0.0026--0.0036）。表 \ref{tab:streaming} 汇总了整体流式性能。
 
 \begin{table}[H]
 \centering
-\begin{tabular}{lr}
+\begin{tabular}{lrr}
 \toprule
-指标 & 值 \\
+指标 & 冷启动（chunk 0） & 稳态（chunk 1--60） \\
 \midrule
-输入音频时长 & 2.0 s \\
-Chunk 数量 & 1 \\
-Chunk 延迟 & 0.232 s \\
-Chunk RTF & 0.116 \\
-总处理时间 & 0.233 s \\
-总 RTF & 0.116 \\
+Chunk 延迟 & 0.235 s & 5.5 ms（均值） \\
+Chunk RTF & 0.117 & 0.0028（均值） \\
+\bottomrule
+\midrule
+\multicolumn{3}{l}{整体统计（61 chunks）} \\
+\midrule
+输入音频时长 & \multicolumn{2}{r}{32.0 s} \\
+Chunk 数量 & \multicolumn{2}{r}{61} \\
+总处理时间 & \multicolumn{2}{r}{0.577 s} \\
+总 RTF & \multicolumn{2}{r}{0.018} \\
 \bottomrule
 \end{tabular}
-\caption{流式处理性能（RTX 4080 SUPER）。RTF $<$ 1 表示快于实时。}
+\caption{流式处理性能（RTX 4080 SUPER，32 s 音频，61 chunks）。RTF $<$ 1 表示快于实时。}
 \label{tab:streaming}
 \end{table}
 
-表 \ref{tab:streaming} 显示 RTF 约为 0.116，即模型推理速度约 8.6 倍于实时，说明模型推理具备实时部署潜力。需要指出的是，本实验为 wav 文件模拟流式输入，不包含真实麦克风采集、端点检测和持续会话管理，因此不能等同于完整的在线流式系统。因云端服务器无麦克风设备，sounddevice 麦克风输入仅作为可选参数预留。
+表 \ref{tab:streaming} 显示，模型在冷启动后处理速度约 350 倍于实时（稳态 RTF 0.0028），整体 RTF 0.018 即约 55 倍于实时，说明模型推理具备实时部署潜力。首个 chunk 延迟较高（0.235 s）主要来自 CUDA kernel 首次调用时的 JIT 编译开销，实际在线部署中可通过模型预热消除。需要指出的是，本实验为 wav 文件模拟流式输入，不包含真实麦克风采集、端点检测和持续会话管理，因此不能等同于完整的在线流式系统。
 
 \subsubsection{DEMAND 真实环境噪声测试}
 
@@ -819,11 +823,11 @@ DEMAND $+5$ dB & 28 & 4.12 & 4.37 & 6.84 & 4.13 & 11.82 \\
 
 \subsubsection{附加实验小结}
 
-这三组附加实验和交互式 Web 展示共同说明，当前 TD-SpeakerBeam 系统在推理速度上具备实时部署潜力（RTF 0.116），在 DEMAND 真实环境噪声下呈现清晰的 SNR 依赖退化规律（$+20$ dB 仅下降 0.68 dB，$+10$ dB 下降 4.22 dB，$+5$ dB 下降 7.74 dB，\sisdr{}i 均保持正值），但在跨语言场景下存在明显局限。跨语言测试表明，单一英文训练数据难以支撑中文目标说话人提取，后续需要引入多语言训练数据和更稳健的说话人表征。所有新增脚本、实验输出和数据来源文档均未修改原有训练与评估代码。
+这三组附加实验和交互式 Web 展示共同说明，当前 TD-SpeakerBeam 系统在推理速度上具备实时部署潜力（32 s 音频 61 chunks，稳态 RTF 0.0028，整体 RTF 0.018），在 DEMAND 真实环境噪声下呈现清晰的 SNR 依赖退化规律（$+20$ dB 仅下降 0.68 dB，$+10$ dB 下降 4.22 dB，$+5$ dB 下降 7.74 dB，\sisdr{}i 均保持正值），但在跨语言场景下存在明显局限。跨语言测试表明，单一英文训练数据难以支撑中文目标说话人提取，后续需要引入多语言训练数据和更稳健的说话人表征。所有新增脚本、实验输出和数据来源文档均未修改原有训练与评估代码。
 
 \subsection{结论}
 
-本文实现并评估了一个基于 TD-SpeakerBeam 的目标说话人提取系统，用 mixture 与 enrollment 模拟鸡尾酒会场景中的选择性听觉。实验在 shared-clean80 数据上得到 10 dB 以上的稳定分离结果，strong teacher 达到 12.52 dB test \sisdr{}，mid student 达到 10.43 dB，fine-tune 蒸馏学生达到 10.59 dB，双参考语音 embedding-level 聚合进一步达到 10.80 dB。不同混合 SNR 和说话者数量实验表明，20 dB babble 条件下系统仍保持 9.77 dB \sisdr{}，但 0 dB babble 和 3-speaker clean 条件分别降至 0.91 dB 和 2.67 dB，说明复杂声场仍需要噪声增强训练或显式多说话者建模。参考语音变体实验显示，正确参考语音、错误参考语音、干扰说话人参考语音和零参考语音之间存在清晰区分，验证了系统的目标说话人选择能力。附加挑战实验进一步表明，模型在推理速度上具备实时部署潜力（RTF 0.116），在 DEMAND 真实噪声下 \sisdr{} 随 SNR 单调退化但 \sisdr{}i 始终为正（$+20$ dB 仅下降 0.68 dB，$+5$ dB 仍保持 4.12 dB），但单语言训练模型在中英跨语言压力测试中完全失败（\sisdr{} $< -30$ dB），为后续多语言 TSE 系统设计提供了明确方向。
+本文实现并评估了一个基于 TD-SpeakerBeam 的目标说话人提取系统，用 mixture 与 enrollment 模拟鸡尾酒会场景中的选择性听觉。实验在 shared-clean80 数据上得到 10 dB 以上的稳定分离结果，strong teacher 达到 12.52 dB test \sisdr{}，mid student 达到 10.43 dB，fine-tune 蒸馏学生达到 10.59 dB，双参考语音 embedding-level 聚合进一步达到 10.80 dB。不同混合 SNR 和说话者数量实验表明，20 dB babble 条件下系统仍保持 9.77 dB \sisdr{}，但 0 dB babble 和 3-speaker clean 条件分别降至 0.91 dB 和 2.67 dB，说明复杂声场仍需要噪声增强训练或显式多说话者建模。参考语音变体实验显示，正确参考语音、错误参考语音、干扰说话人参考语音和零参考语音之间存在清晰区分，验证了系统的目标说话人选择能力。附加挑战实验进一步表明，模型在推理速度上具备实时部署潜力（32 s 音频 61 chunks，稳态 RTF 0.0028），在 DEMAND 真实噪声下 \sisdr{} 随 SNR 单调退化但 \sisdr{}i 始终为正（$+20$ dB 仅下降 0.68 dB，$+5$ dB 仍保持 4.12 dB），但单语言训练模型在中英跨语言压力测试中完全失败（\sisdr{} $< -30$ dB），为后续多语言 TSE 系统设计提供了明确方向。
 
 本系统的主要局限是未显式建模空间声源定位，尚未利用双耳线索、DOA 或麦克风阵列信息；本文重点模拟目标驱动的选择性注意和声纹绑定。围绕数据构造、蒸馏和频域前端的诊断实验进一步给出三点经验：target/enrollment 必须严格 disjoint 并保证说话人标签正确；有干净目标监督时，从零波形蒸馏并不稳定；频域前端即使在训练阶段集成仍需谨慎调参，不能仅在推理阶段硬加。本文完成了从认知任务到可运行语音系统的建模、实现、评估和反思，为后续加入更稳健的参考语音增强、训练时频域前端、复杂度感知推理、多语言训练或双耳/阵列空间线索建模提供了实验基础。
 
