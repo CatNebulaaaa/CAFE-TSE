@@ -1,74 +1,74 @@
-# TD-SpeakerBeam Target Speaker Extraction — Course Project
+# TD-SpeakerBeam 目标说话人提取 —— 课程项目
 
-## Overview
+## 概述
 
-This is the final submission for the "Cognitive and Computing" course project.
-The report covers three tasks:
+本文件夹为《认知与计算》课程最终提交包，报告涵盖三项任务：
 
-1. **Task 1**: Multi-dimensional comparison of AI and human intelligence
-2. **Task 2**: Cocktail party target speaker extraction with TD-SpeakerBeam
-   - Shared-clean80 training and evaluation (strong teacher 12.52 dB, mid student 10.43 dB, fine-tune distill 10.59 dB, multi-enrollment pooling 10.80 dB)
-   - Enrollment sanity checks (correct/shuffled/interferer/zero/short/noisy)
-   - Mixture SNR and 3-speaker stress tests
-   - EGSP frequency pre-emphasis diagnostics
-   - **Section 2.9**: Additional challenge experiments (streaming demo, DEMAND real noise, Chinese-English cross-lingual test, interactive Web GUI)
-3. **Task 3**: Mapping neural networks and backpropagation to human learning mechanisms
+1. **任务一**：人工智能与人类智能的多维度对比分析
+2. **任务二**：鸡尾酒会问题模拟：基于 TD-SpeakerBeam 的目标说话人提取系统
+   - Shared-clean80 训练与评估（强教师 12.52 dB，中等学生 10.43 dB，fine-tune 蒸馏 10.59 dB，多参考聚合 10.80 dB）
+   - 参考语音 sanity check（正确/打乱/干扰/零/短/带噪参考）
+   - 混合 SNR 与三说话人压力测试
+   - EGSP 频谱预加重诊断
+   - **第 2.9 节**：附加挑战实验（流式处理、DEMAND 真实噪声、中英跨语言测试、交互式 Web 展示）
+3. **任务三**：神经网络与反向传播的人类学习机制映射
 
-## Additional Challenge Experiments (Section 2.9)
+## 附加挑战实验（第 2.9 节）
 
-| Experiment | Script | Key Result |
-|---|---|---|
-| Streaming demo | `scripts/streaming_demo.py` | RTF 0.116 (8.6x real-time) on RTX 4080 SUPER |
-| Real noise test | `scripts/test_real_noise.py` | DEMAND cafeteria noise: monotonic SI-SDR degradation with SNR |
-| Cross-lingual test | `scripts/test_cross_lingual.py` | Both zh→en and en→zh directions failed (SI-SDR < -30 dB) |
+| 实验 | 脚本 | 关键结果 |
+|------|------|----------|
+| 流式处理  | `scripts/streaming_demo.py`    | 32 s 音频 61 chunks，稳态 RTF 0.0028（350 倍实时），整体 RTF 0.018（55 倍实时） |
+| 真实噪声  | `scripts/test_real_noise.py`   | DEMAND 咖啡厅噪声：28 样本，+20/+10/+5 dB，SI-SDR 单调下降（11.86 → 11.18 → 7.64 → 4.12 dB） |
+| 跨语言    | `scripts/test_cross_lingual_batch.py` | 5 对/方向，zh→en 均值 −30.88 dB，en→zh 均值 −44.37 dB，全部失败 |
 
-Data sources (CC BY 4.0 / Apache 2.0): `results/data_sources.md`
+数据来源（CC BY 4.0 / Apache 2.0）：`results/data_sources.md`
 
-## GUI Demo
+## 交互式 Web 展示
 
-Open `gui/index.html` in a browser to explore:
-- System overview with architecture diagram
-- 3 interactive audio cases with A/B comparison
-- Radar and bar charts for experiment metrics
-- Cognitive mapping of selective attention to model components
+在浏览器中打开 `gui/index.html` 可查看：
+- 系统总览（架构图与核心指标）
+- 3 组可交互音频案例（A/B 对比播放）
+- 实验图表（雷达图、柱状图）
+- 认知映射（选择性注意到模型组件）
 
-All demo audio files are in `demo_audio/` (from shared-clean80 test set actual outputs).
+所有 demo 音频位于 `demo_audio/`（来自 shared-clean80 测试集实际输出）。
 
-## Project Layout
+## 项目结构
 
 ```
 final_submission/
 ├── report/
-│   ├── 认知与计算课程报告_王志翔_22920242203422.pdf   (compiled, 29 pages)
-│   └── 认知与计算课程报告_王志翔_22920242203422.tex   (source)
+│   ├── 认知与计算课程报告_王志翔_22920242203422.pdf   （已编译，29 页）
+│   └── 认知与计算课程报告_王志翔_22920242203422.tex   （LaTeX 源码）
 ├── scripts/
-│   ├── streaming_demo.py          (streaming chunk-by-chunk inference)
-│   ├── test_real_noise.py         (real noise robustness test)
-│   ├── test_cross_lingual.py      (cross-lingual test)
-│   ├── train_open_speakerbeam.py  (TD-SpeakerBeam training)
-│   ├── evaluate_open_speakerbeam_variants.py  (enrollment variants evaluation)
-│   ├── evaluate_open_speakerbeam_multi_enroll.py  (multi-enrollment pooling)
-│   └── ...                        (more training/eval scripts)
-├── src/cafe_tse/                  (CAFE-TSE prototype + shared utilities)
-├── gui/                           (Interactive Web demo)
+│   ├── streaming_demo.py              （流式逐 chunk 推理）
+│   ├── test_real_noise.py             （真实噪声鲁棒性测试）
+│   ├── test_cross_lingual.py          （跨语言单对测试）
+│   ├── test_cross_lingual_batch.py    （跨语言批量测试）
+│   ├── train_open_speakerbeam.py      （TD-SpeakerBeam 训练）
+│   ├── evaluate_open_speakerbeam_variants.py  （参考语音变体评估）
+│   ├── evaluate_open_speakerbeam_multi_enroll.py  （多参考语音聚合）
+│   └── ...                            （更多训练/评估脚本）
+├── src/cafe_tse/                      （CAFE-TSE 原型 + 共享工具库）
+├── gui/                               （交互式 Web 展示）
 │   ├── index.html
 │   ├── styles.css
 │   ├── app.js
 │   └── assets/
-├── demo_audio/                    (3 demo cases: mixture, target, baseline, ours)
+├── demo_audio/                        （3 组 demo 案例：mixture、target、baseline、ours）
 ├── results/
-│   ├── data_sources.md            (data provenance and licenses)
-│   └── summary.md                 (experiment summary)
+│   ├── data_sources.md                （数据来源与许可证）
+│   └── summary.md                     （实验总结）
 └── requirements.txt
 ```
 
-## Model Checkpoint
+## 模型检查点
 
-The experiments use the **mid fine-tune distill** model:
+实验使用 **mid fine-tune distill** 模型：
 `open_speakerbeam_shared_clean80_student_mid_distill_ft_continue_w005/best.pt`
 
-Test set (shared-clean80, 800 samples): SI-SDR 10.59 dB, SI-SDRi 10.59 dB, SDR 10.60 dB.
+测试集（shared-clean80，800 样本）：SI-SDR 10.59 dB，SI-SDRi 10.59 dB，SDR 10.60 dB。
 
-## Scope
+## 范围说明
 
-The system models selective attention and target speaker voiceprint binding via enrollment conditioning. It does NOT explicitly model spatial source localization, DOA, binaural cues, microphone arrays, or spatial angle labels.
+本系统通过 enrollment 条件建模选择性注意与目标说话人声纹绑定，重点关注单通道目标驱动分离。系统未显式建模空间声源定位、DOA、双耳线索、麦克风阵列或空间角度标签。
