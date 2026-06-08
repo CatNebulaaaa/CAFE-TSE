@@ -794,32 +794,35 @@ DEMAND $+5$ dB & 28 & 4.12 & 4.37 & 6.84 & 4.13 & 11.82 \\
 \subsubsection{中英跨语言泛化测试}
 
 \paragraph{设计。}
-跨语言测试脚本（\texttt{scripts/test\_cross\_lingual.py}）支持两个方向的测试：（A）中文目标说话人 + 英文干扰说话人；（B）英文目标说话人 + 中文干扰说话人。每组需要 3 个 8 kHz 单声道 wav 文件（target、enrollment 来自同一说话人，interferer 来自不同说话人）。脚本构造 0 dB 等响度混合语音，运行推理并记录 \sisdr{} 和 \sisdr{}i。中文语音来自 THCHS-30（Apache 2.0），选取说话人 A23 和 B33；英文语音来自 LibriSpeech test-clean（CC BY 4.0），选取说话人 121 和 1089。所有音频统一转换为 8 kHz mono、峰值归一化至 0.95。
+跨语言测试脚本（\texttt{scripts/test\_cross\_lingual\_batch.py}，单对脚本为 \texttt{test\_cross\_lingual.py}）支持两个方向的批量测试：（A）中文目标说话人 + 英文干扰说话人；（B）英文目标说话人 + 中文干扰说话人。每组需要 3 个 8 kHz 单声道 wav 文件（target、enrollment 来自同一说话人，interferer 来自不同说话人）。脚本构造 0 dB 等响度混合语音，运行推理并记录 \sisdr{} 和 \sisdr{}i。本实验每个方向测试 5 对不同说话人对，共计 10 次推理。
+
+中文语音来自 THCHS-30（Apache 2.0），选取说话人 C21、C6、B8、C31、C19 作为目标/注册说话人，C22、C17、C18、C32、B31 作为干扰说话人；英文语音来自 LibriSpeech test-clean（CC BY 4.0），选取说话人 1188、1221、1284、1320、1580 作为目标/注册说话人，干扰由同一英文额外说话人提供。所有音频统一转换为 8 kHz mono、峰值归一化至 0.95。
 
 \paragraph{结果。}
 
 \begin{table}[H]
 \centering
-\begin{tabular}{lrrrr}
+\begin{tabular}{lrrrrr}
 \toprule
-测试方向 & 目标语言 & 干扰语言 & \sisdr{}$\uparrow$ & \sisdr{}i$\uparrow$ \\
+测试方向 & $n$ & \sisdr{} mean & \sisdr{} median & \sisdr{} min & \sisdr{} max \\
 \midrule
-中文目标 + 英文干扰 & zh & en & $-$33.03 & $-$32.99 \\
-英文目标 + 中文干扰 & en & zh & $-$41.62 & $-$41.62 \\
+中文目标 + 英文干扰 & 5 & $-$30.88 & $-$31.70 & $-$43.69 & $-$15.87 \\
+英文目标 + 中文干扰 & 5 & $-$44.37 & $-$40.19 & $-$57.82 & $-$29.29 \\
 \bottomrule
 \end{tabular}
-\caption{中英跨语言目标说话人提取结果。}
+\caption{中英跨语言目标说话人提取结果（5 对/方向，0 dB 混合 SNR）。}
 \label{tab:crosslingual}
 \end{table}
 
-表 \ref{tab:crosslingual} 显示两个方向的跨语言测试结果均为强负值，说明在本小规模中英跨语言压力测试中，模型出现完全失败。具体分析：
+表 \ref{tab:crosslingual} 显示两个方向的跨语言测试结果均为强负值（均值 $-$30.88 dB 和 $-$44.37 dB），且所有 10 次测试无一例外，\sisdr{}i 也均为负值。中文目标方向的最优个体（\sisdr{} $-$15.87 dB）和英文目标方向的最优个体（\sisdr{} $-$29.29 dB）同样远低于可用水平，说明在本小规模中英跨语言压力测试中，模型全面失败。具体分析：
 
 \begin{itemize}
-    \item \textbf{中文目标方向}（\sisdr{} $-$33.03 dB）：enrollment 和 target 均为中文（同一说话人 A23），但模型仅在英文上训练，其 speaker embedding 分支从未学习过中文语音的声学特征，无法从 enrollment 中提取有效的目标声纹特征来指导分离。
-    \item \textbf{英文目标方向}（\sisdr{} $-$41.62 dB）：enrollment 和 target 均为英文（同一说话人 121），模型具备英文声纹建模能力，但干扰说话人为中文语音——该干扰信号与模型见过的英文干扰声学分布不同，导致 masker 模块无法有效抑制。
+    \item \textbf{中文目标方向}（\sisdr{} 均值 $-$30.88 dB）：enrollment 和 target 均为中文（同一说话人），但模型仅在英文上训练，其 speaker embedding 分支从未学习过中文语音的声学特征，无法从 enrollment 中提取有效的目标声纹特征来指导分离。5 对说话人的 \sisdr{} 范围从 $-$15.87 至 $-$43.69 dB，跨度较大，可能与中文说话人的音色、录音条件差异有关。
+
+    \item \textbf{英文目标方向}（\sisdr{} 均值 $-$44.37 dB）：enrollment 和 target 均为英文（同一说话人），模型具备英文声纹建模能力，但干扰说话人为中文语音——该干扰信号与模型见过的英文干扰声学分布不同，导致 masker 模块无法有效抑制。该方向比中文目标方向更低约 13.5 dB，表明即使 enrollment--target 语言匹配，跨语言干扰源也能显著破坏分离。
 \end{itemize}
 
-两个方向的极端负值表明模型输出与目标几乎完全错位。这一结果说明，基于单语言（英文 LibriSpeech）训练的目标说话人提取模型\textbf{在跨语言场景下缺乏泛化能力}。要支持中英跨语言场景，需要在训练数据中引入多语言语音，使 speaker embedding 分支和 masker 分支同时学习跨语言的声纹表示和干扰建模。需要强调的是，本实验样本量极小（每个方向仅一对说话人），上述结论需要在更大规模的多语言测试中进一步验证。
+两个方向的极端负值表明模型输出与目标几乎完全错位。这一结果说明，基于单语言（英文 LibriSpeech）训练的目标说话人提取模型\textbf{在跨语言场景下缺乏泛化能力}。要支持中英跨语言场景，需要在训练数据中引入多语言语音，使 speaker embedding 分支和 masker 分支同时学习跨语言的声纹表示和干扰建模。本实验样本量为每方向 5 对，结论具有一定统计可靠性，但仍需在更大多语言数据集上进一步验证。
 
 \subsubsection{附加实验小结}
 
